@@ -7,6 +7,7 @@ import VerseCommentaryEditor from './VerseCommentaryEditor.jsx';
 import FootnotePopup from './FootnotePopup.jsx';
 import { parseVerseTokens, collectStrongsKeys, cleanMorph } from '../utils/parseInterlinear.js';
 import VerseHoverCard from './VerseHoverCard.jsx';
+import ShareFindingModal from './ShareFindingModal.jsx';
 
 function groupVerses(verses) {
   const segments = [];
@@ -80,12 +81,37 @@ function extractCleanSelectionText(range) {
   return container.textContent.trim().replace(/\s+/g, ' ');
 }
 
+// Canonical chapter counts for all 66 Protestant canon books, keyed by
+// the short title SWORD returns (standard OSIS abbreviations). Used to
+// prevent the ‹/› nav buttons from navigating to a chapter that doesn't exist.
+const BOOK_CHAPTER_COUNT = {
+  Gen:50, Exod:40, Lev:27, Num:36, Deut:34, Josh:24, Judg:21, Ruth:4,
+  '1Sam':31, '2Sam':24, '1Kgs':22, '2Kgs':25, '1Chr':29, '2Chr':36,
+  Ezra:10, Neh:13, Esth:10, Job:42, Ps:150, Prov:31, Eccl:12, Song:8,
+  Isa:66, Jer:52, Lam:5, Ezek:48, Dan:12, Hos:14, Joel:3, Amos:9,
+  Obad:1, Jonah:4, Mic:7, Nah:3, Hab:3, Zeph:3, Hag:2, Zech:14, Mal:4,
+  Matt:28, Mark:16, Luke:24, John:21, Acts:28, Rom:16, '1Cor':16, '2Cor':13,
+  Gal:6, Eph:6, Phil:4, Col:4, '1Thess':5, '2Thess':3, '1Tim':6, '2Tim':4,
+  Titus:3, Phlm:1, Heb:13, Jas:5, '1Pet':5, '2Pet':3, '1John':5, '2John':1,
+  '3John':1, Jude:1, Rev:22,
+};
+
 const HIGHLIGHT_BG = {
   yellow: 'bg-amber-300/30',
   blue: 'bg-sky-300/30',
   green: 'bg-emerald-300/25',
   pink: 'bg-rose-300/25',
   purple: 'bg-violet-300/25',
+};
+
+// Group shared highlights use a lighter tint so personal highlights read
+// as "mine" and group highlights read as "noticed by the group".
+const GROUP_HIGHLIGHT_BG = {
+  yellow: 'bg-amber-300/15',
+  blue: 'bg-sky-300/15',
+  green: 'bg-emerald-300/10',
+  pink: 'bg-rose-300/10',
+  purple: 'bg-violet-300/10',
 };
 
 const HIGHLIGHT_SWATCH = {
@@ -113,12 +139,14 @@ export default function ReaderPane({
   onPhraseStudy,
   refreshNonce,
   onPersonalCommentarySaved,
+  isLoggedIn = false,
 }) {
   const [verses, setVerses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hoverCard, setHoverCard] = useState(null); // { refStr, rect }
   const hoverCloseTimer = useRef(null);
+  const preserveSelectionRef = useRef(false);
   const [footnotePopup, setFootnotePopup] = useState(null);
   const [selectedRange, setSelectedRange] = useState(null);
   const [phraseSelection, setPhraseSelection] = useState(null); // { text, strongsSequence, x, y }
@@ -134,30 +162,52 @@ export default function ReaderPane({
   }
   const [strongsCache, setStrongsCache] = useState(new Map()); // strongsKey → transcription
   const verseRefs = useRef(new Map());
+  const [groupFindings, setGroupFindings] = useState([]); // ScriptoriumFinding[] for current chapter
+  const [groupHighlightMap, setGroupHighlightMap] = useState(new Map()); // verseRef → ScriptoriumHighlight[]
+  const [shareFindingRef, setShareFindingRef] = useState(null); // { reference, module, x, y }
 
   useEffect(() => {
     if (!module || !reference) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
-    setSelectedRange(null);
+    if (!preserveSelectionRef.current) setSelectedRange(null);
+    preserveSelectionRef.current = false;
     setHighlightMap(new Map());
     setNoteCount(0);
+    setGroupFindings([]);
+    setGroupHighlightMap(new Map());
 
     async function loadAnnotations(loadedVerses) {
       if (!showMarginalia || !loadedVerses.length) return;
       const v0 = loadedVerses[0];
       const chapterRef = `${v0.bibleBookShortTitle} ${v0.chapter}`;
+      const prefix = `${chapterRef}:`;
       try {
-        const [hls, nts] = await Promise.all([
-          api.listHighlights({ prefix: `${chapterRef}:` }),
+        const fetchList = [
+          api.listHighlights({ prefix }),
           api.listNotes({ reference: chapterRef }),
-        ]);
+        ];
+        if (isLoggedIn) {
+          fetchList.push(api.listStudyGroupFindings(prefix));
+          fetchList.push(api.listStudyGroupHighlights(prefix, module));
+        }
+        const [hls, nts, groupFnds, groupHls] = await Promise.all(fetchList);
         if (cancelled) return;
         const hMap = new Map();
         for (const h of hls) hMap.set(h.reference, { id: h.id, color: h.color });
         setHighlightMap(hMap);
         setNoteCount(nts.length);
+        if (isLoggedIn) {
+          setGroupFindings(groupFnds || []);
+          const ghMap = new Map();
+          for (const gh of (groupHls || [])) {
+            const arr = ghMap.get(gh.reference) || [];
+            arr.push(gh);
+            ghMap.set(gh.reference, arr);
+          }
+          setGroupHighlightMap(ghMap);
+        }
       } catch {} // non-fatal
     }
 
@@ -255,6 +305,8 @@ export default function ReaderPane({
     if (!first) return;
     const nextChapter = Number(first.chapter) + delta;
     if (nextChapter < 1) return;
+    const maxChapter = BOOK_CHAPTER_COUNT[first.bibleBookShortTitle];
+    if (maxChapter && nextChapter > maxChapter) return;
     onNavigate?.(focusMode ? `${first.bibleBookShortTitle} ${nextChapter}:1` : `${first.bibleBookShortTitle} ${nextChapter}`);
   }
 
@@ -262,13 +314,14 @@ export default function ReaderPane({
     e.stopPropagation();
     setPhraseSelection(null);
     if (e.shiftKey && selectedRange) {
-      setSelectedRange((prev) => ({ ...prev, focus: v.__index, x: e.clientX, y: e.clientY + 16 }));
+      setSelectedRange((prev) => ({ ...prev, focus: v.__index, x: e.clientX, y: e.clientY + 16, popupOpen: false }));
       return;
     }
     if (focusMode) {
+      preserveSelectionRef.current = true;
       onNavigate?.(`${v.bibleBookShortTitle} ${v.chapter}:${parseInt(v.verseNr, 10)}`);
     }
-    setSelectedRange({ anchor: v.__index, focus: v.__index, x: e.clientX, y: e.clientY + 16 });
+    setSelectedRange({ anchor: v.__index, focus: v.__index, x: e.clientX, y: e.clientY + 16, popupOpen: true });
   }
 
   function isIndexSelected(index) {
@@ -310,10 +363,10 @@ export default function ReaderPane({
       .slice(lo, hi + 1)
       .map((v) => {
         tempEl.innerHTML = v.content;
-        return `${v.verseNr} ${tempEl.textContent.trim()}`;
+        return tempEl.textContent.trim();
       })
       .join(' ');
-    navigator.clipboard?.writeText(`${ref}\n${text}`).catch(() => {});
+    navigator.clipboard?.writeText(`"${text}" (${ref}, ${module})`).catch(() => {});
     setSelectedRange(null);
   }
 
@@ -601,7 +654,7 @@ export default function ReaderPane({
                 onClick={(e) => {
                   if (verses.length === 0) return;
                   setPhraseSelection(null);
-                  setSelectedRange({ anchor: 0, focus: verses.length - 1, x: e.clientX, y: e.clientY + 16 });
+                  setSelectedRange({ anchor: 0, focus: verses.length - 1, x: e.clientX, y: e.clientY + 16, popupOpen: true });
                 }}
                 aria-label="Annotate this passage"
               />
@@ -686,6 +739,11 @@ export default function ReaderPane({
                       const isFocused = focusMode && verseKey === focusedVerseKey;
                       const verseRef = `${v.bibleBookShortTitle} ${v.chapter}:${parseInt(v.verseNr, 10)}`;
                       const hlColor = showMarginalia ? highlightMap.get(verseRef)?.color : null;
+                      const groupHls = showMarginalia ? groupHighlightMap.get(verseRef) : null;
+                      const groupHlColor = !hlColor && groupHls?.length ? groupHls[0].color : null;
+                      const groupNames = groupHls?.length
+                        ? groupHls.map((h) => `${h.scriptorium.name} (${h.author.displayName || h.author.username})`).join(', ')
+                        : null;
                       return (
                         <span
                           key={verseKey}
@@ -693,17 +751,19 @@ export default function ReaderPane({
                             if (el) verseRefs.current.set(verseKey, el);
                             else verseRefs.current.delete(verseKey);
                           }}
+                          title={groupNames ? `Shared highlight: ${groupNames}` : undefined}
                           className={[
                             isIndexSelected(v.__index) ? 'rounded bg-pageAccent/20' : '',
                             isFocused ? 'border-l-2 border-pageAccent bg-pageAccent/10 pl-1' : '',
                             hlColor ? (HIGHLIGHT_BG[hlColor] ?? 'bg-amber-300/30') : '',
+                            groupHlColor ? (GROUP_HIGHLIGHT_BG[groupHlColor] ?? 'bg-amber-300/15') : '',
                           ]
                             .filter(Boolean)
                             .join(' ')}
                         >
                           <sup
                             className="mr-1 cursor-pointer text-xs text-pageAccent hover:text-brass"
-                            title={focusMode ? 'Click to focus this verse, shift-click to select a range' : 'Click to select, shift-click to select a range'}
+                            title={focusMode ? 'Click to focus this verse' : 'Click to select, shift-click to extend selection'}
                             onClick={(e) => handleVerseNumberClick(e, v)}
                           >
                             {v.verseNr}
@@ -724,13 +784,32 @@ export default function ReaderPane({
           <p className="text-pageMuted">No text returned for this reference in {module}.</p>
       )}
 
-      {selectedRange &&
+      {groupFindings.length > 0 && (
+        <div className="mt-6 border-t border-pageBorder pt-4">
+          <h3 className="mb-3 font-sans text-xs uppercase tracking-wider text-pageMuted">Study Findings</h3>
+          <div className="space-y-3">
+            {groupFindings.map((f) => (
+              <div key={f.id} className="rounded border border-pageBorder/60 bg-pageAccent/5 p-3">
+                <div className="mb-1 flex items-baseline gap-2">
+                  <span className="font-mono text-xs font-medium text-brass">{f.reference}</span>
+                  <span className="text-xs text-pageMuted">— {f.study.title}</span>
+                  <span className="ml-auto text-xs text-pageMuted/60">{f.author.displayName || f.author.username}</span>
+                </div>
+                {f.title && <p className="mb-1 text-sm font-medium text-pageText">{f.title}</p>}
+                <p className="text-sm leading-relaxed text-pageText/80">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedRange?.popupOpen &&
         createPortal(
           <>
-            <div className="fixed inset-0 z-30" onClick={() => setSelectedRange(null)} />
+            <div className="fixed inset-0 z-30" onClick={() => setSelectedRange((prev) => ({ ...prev, popupOpen: false }))} />
             <div
               className="fixed z-40 flex items-center gap-1 rounded-md border border-rule bg-panel p-1 shadow-2xl"
-              style={{ left: selectedRange.x, top: selectedRange.y }}
+              style={{ left: Math.min(selectedRange.x, window.innerWidth - 460), top: Math.min(selectedRange.y, window.innerHeight - 52) }}
             >
               <span className="px-1 font-mono text-xs text-muted">
                 {getSelectedReference()}
@@ -768,6 +847,28 @@ export default function ReaderPane({
               >
                 Note
               </button>
+              {isLoggedIn && (
+                <button
+                  onClick={() => {
+                    const ref = getSelectedReference();
+                    if (ref) {
+                      const lo = Math.min(selectedRange.anchor, selectedRange.focus);
+                      const hi = Math.max(selectedRange.anchor, selectedRange.focus);
+                      const tempEl = document.createElement('div');
+                      const verseText = verses
+                        .slice(lo, hi + 1)
+                        .map((v) => { tempEl.innerHTML = v.content; return `${v.verseNr} ${tempEl.textContent.trim()}`; })
+                        .join(' ');
+                      setShareFindingRef({ reference: ref, module, verseText, x: selectedRange.x, y: selectedRange.y + 28 });
+                    }
+                    setSelectedRange(null);
+                  }}
+                  className="rounded border border-rule px-2 py-1 text-xs text-muted hover:border-brass hover:text-parchment"
+                  title="Share this finding with a Scriptorium"
+                >
+                  Share →
+                </button>
+              )}
               <button
                 onClick={handleCopySelection}
                 className="rounded border border-rule px-2 py-1 text-xs text-muted hover:border-brass hover:text-parchment"
@@ -784,7 +885,7 @@ export default function ReaderPane({
                 </button>
               )}
               <button
-                onClick={() => setSelectedRange(null)}
+                onClick={() => setSelectedRange((prev) => ({ ...prev, popupOpen: false }))}
                 className="rounded px-1.5 py-1 text-xs text-muted hover:text-parchment"
               >
                 ✕
@@ -802,8 +903,8 @@ export default function ReaderPane({
               onClick={() => { setPhraseSelection(null); window.getSelection()?.removeAllRanges(); }}
             />
             <div
-              className="fixed z-40 flex max-w-lg flex-wrap items-center gap-1 rounded-md border border-rule bg-panel p-1 shadow-2xl"
-              style={{ left: phraseSelection.x, top: phraseSelection.y }}
+              className="fixed z-40 flex items-center gap-1 rounded-md border border-rule bg-panel p-1 shadow-2xl"
+              style={{ left: Math.min(phraseSelection.x, window.innerWidth - 560), top: Math.min(phraseSelection.y, window.innerHeight - 44) }}
             >
               {/* Highlight swatches — only if we know which verse(s) are spanned */}
               {phraseSelection.verseIndices[0] !== null && (
@@ -828,23 +929,36 @@ export default function ReaderPane({
                 </div>
               )}
 
-              {/* Note — opens commentary editor pre-filled with the selected quote */}
+              {/* Note and Copy side by side */}
               {phraseSelection.verseRef && (
-                <button
-                  onClick={() => {
-                    setVerseNoteRef({
-                      reference: phraseSelection.verseRef,
-                      x: phraseSelection.x,
-                      y: phraseSelection.y + 32,
-                      initialQuote: phraseSelection.text,
-                    });
-                    setPhraseSelection(null);
-                    window.getSelection()?.removeAllRanges();
-                  }}
-                  className="rounded border border-rule px-2 py-1 text-xs text-muted hover:border-verdigris hover:text-parchment"
-                >
-                  Note
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setVerseNoteRef({
+                        reference: phraseSelection.verseRef,
+                        x: phraseSelection.x,
+                        y: phraseSelection.y + 32,
+                        initialQuote: phraseSelection.text,
+                      });
+                      setPhraseSelection(null);
+                      window.getSelection()?.removeAllRanges();
+                    }}
+                    className="rounded border border-rule px-2 py-1 text-xs text-muted hover:border-verdigris hover:text-parchment"
+                  >
+                    Note
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(`"${phraseSelection.text}" (${phraseSelection.verseRef}, ${module})`).catch(() => {});
+                      setPhraseSelection(null);
+                      window.getSelection()?.removeAllRanges();
+                    }}
+                    className="rounded border border-rule px-2 py-1 text-xs text-muted hover:border-brass hover:text-parchment"
+                    title="Copy selected text with reference"
+                  >
+                    Copy
+                  </button>
+                </>
               )}
 
               {/* Phrase AI study — only when that feature is wired up */}
@@ -869,7 +983,6 @@ export default function ReaderPane({
                   )}
                 </>
               )}
-
               <button
                 onClick={() => { setPhraseSelection(null); window.getSelection()?.removeAllRanges(); }}
                 className="rounded px-1.5 py-1 text-xs text-muted hover:text-parchment"
@@ -912,6 +1025,25 @@ export default function ReaderPane({
           onNavigate={onOpenInTab ?? onNavigate}
           onMouseEnter={cancelHoverClose}
           onMouseLeave={scheduleHoverClose}
+        />
+      )}
+
+      {shareFindingRef && (
+        <ShareFindingModal
+          reference={shareFindingRef.reference}
+          module={shareFindingRef.module}
+          verseText={shareFindingRef.verseText}
+          x={shareFindingRef.x}
+          y={shareFindingRef.y}
+          onClose={() => setShareFindingRef(null)}
+          onShared={() => {
+            // Re-fetch findings for the current chapter so the new one appears immediately
+            if (verses.length > 0) {
+              const v0 = verses[0];
+              const prefix = `${v0.bibleBookShortTitle} ${v0.chapter}:`;
+              api.listStudyGroupFindings(prefix).then(setGroupFindings).catch(() => {});
+            }
+          }}
         />
       )}
     </div>
