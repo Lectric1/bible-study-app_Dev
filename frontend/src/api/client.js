@@ -369,4 +369,29 @@ export const api = {
   getAllMaps: () => request('/bible-maps/all'),
   getMapsForReference: (ref) =>
   request(`/bible-maps/for-reference?ref=${encodeURIComponent(ref)}`),
+
+  listLayerEntries: (layerId, startYear, startMonth, endYear, endMonth) =>
+  fetch(`/api/calendar/layers/${layerId}/entries?startYear=${startYear}&startMonth=${startMonth}&endYear=${endYear}&endMonth=${endMonth}`)
+  .then(r => r.json()),
+  createEntry: (data) => fetch('/api/calendar/entries', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }).then(r => r.json()),
+
+  createLayer: (data) => fetch('/api/calendar/layers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }).then(r => r.json()),
+
+  deleteLayer: (id) => fetch(`/api/calendar/layers/${id}`, {
+    method: 'DELETE',
+  }).then(r => r.json()),
+  deleteLayer: (id) => fetch(`/api/calendar/layers/${id}`, {
+    method: 'DELETE',
+  }).then(r => {
+    if (!r.ok) throw new Error(`Delete failed: ${r.status}`);
+    return r;
+  }),
 };
