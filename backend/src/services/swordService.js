@@ -49,6 +49,9 @@ class SwordService {
     // phrase-study requests for the same not-yet-indexed module share
     // one scan instead of each starting their own full pass.
     this._moduleIndexBuilding = new Map();
+    // Serializes all SWORD search calls — node-sword-interface throws if
+    // getModuleSearchResults() is called concurrently.
+    this._searchLock = Promise.resolve();
     try {
       this.sword.enableMarkup();
     } catch (err) {
@@ -511,15 +514,44 @@ class SwordService {
   }
 
   wrapVerseReferences(html, currentBookOsis = null) {
-    const tagSpans = [];
-    const tagRe = /<[^>]*>/g;
-    let tagMatch;
-    while ((tagMatch = tagRe.exec(html))) {
-      tagSpans.push([tagMatch.index, tagMatch.index + tagMatch[0].length]);
-    }
-    const insideExistingTag = (pos) => tagSpans.some(([s, e]) => pos >= s && pos < e);
+    if (!html) return html;
 
-    const matches = findReferencesInText(html, currentBookOsis).filter((m) => !insideExistingTag(m.start) && !insideExistingTag(m.end - 1));
+    // Strip HTML tags before passing to the BCV parser. Tag text (e.g. "span"
+    // inside </span>) can break the parser's book-context propagation, causing
+    // bare refs like "3:22" that follow "Prov. 1:9" in separate spans to go
+    // unresolved. Build a position map so clean-text offsets map back to the
+    // original HTML offsets for accurate span insertion.
+    const posMap = []; // posMap[cleanIndex] = htmlIndex
+    let cleanText = '';
+    let i = 0;
+    while (i < html.length) {
+      if (html[i] === '<') {
+        const tagEnd = html.indexOf('>', i);
+        i = tagEnd === -1 ? html.length : tagEnd + 1;
+      } else {
+        posMap.push(i);
+        cleanText += html[i];
+        i++;
+      }
+    }
+
+    const rawMatches = findReferencesInText(cleanText, currentBookOsis);
+    if (rawMatches.length === 0) return html;
+
+    // Map clean-text positions back to HTML positions, dropping any match
+    // whose endpoints fall outside the map (shouldn't happen) or that
+    // overlaps a previously accepted match.
+    const matches = [];
+    let prevHtmlEnd = 0;
+    for (const m of rawMatches) {
+      if (m.start >= posMap.length || m.end - 1 >= posMap.length) continue;
+      const htmlStart = posMap[m.start];
+      const htmlEnd = posMap[m.end - 1] + 1;
+      if (htmlStart < prevHtmlEnd) continue;
+      matches.push({ osis: m.osis, start: htmlStart, end: htmlEnd });
+      prevHtmlEnd = htmlEnd;
+    }
+
     if (matches.length === 0) return html;
     let out = '';
     let cursor = 0;
@@ -634,17 +666,26 @@ class SwordService {
    *  so stripHtml (plain text) rather than the full processVerseContent
    *  pipeline is the right level of processing here. */
   async search(moduleCode, term, { searchType = 'multiWord', searchScope = 'BIBLE', limit = 500 } = {}) {
-    const results = await this.sword.getModuleSearchResults(moduleCode, term, () => {}, searchType, searchScope);
-    const total = results.length;
-    const slice = limit > 0 ? results.slice(0, limit) : results;
-    return {
-      total,
-      capped: total > slice.length,
-      verses: slice.map((r) => {
-        const { content } = this.processVerseContent(r.content);
-        return { ...r, content };
-      }),
-    };
+    let releaseLock;
+    const nextLock = new Promise((r) => { releaseLock = r; });
+    const currentLock = this._searchLock;
+    this._searchLock = nextLock;
+    await currentLock;
+    try {
+      const results = await this.sword.getModuleSearchResults(moduleCode, term, () => {}, searchType, searchScope);
+      const total = results.length;
+      const slice = limit > 0 ? results.slice(0, limit) : results;
+      return {
+        total,
+        capped: total > slice.length,
+        verses: slice.map((r) => {
+          const { content } = this.processVerseContent(r.content);
+          return { ...r, content };
+        }),
+      };
+    } finally {
+      releaseLock();
+    }
   }
 
   getStrongsEntry(strongsKey) {

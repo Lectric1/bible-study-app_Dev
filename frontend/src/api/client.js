@@ -37,6 +37,12 @@ export const api = {
     return request(`/search?${params}`);
   },
 
+  searchCommentary: (q, module = '') => {
+    const params = new URLSearchParams({ q });
+    if (module) params.set('module', module);
+    return request(`/search/commentary?${params}`);
+  },
+
   // Notes / highlights / bookmarks
   listNotes: ({ reference, prefix, q } = {}) => {
     const params = new URLSearchParams();
@@ -83,6 +89,11 @@ export const api = {
   getWikipediaEntry: (q) => request(`/wikipedia?q=${encodeURIComponent(q)}`),
   getMerriamEntry: (q) => request(`/merriam?q=${encodeURIComponent(q)}`),
   getCodexSummary: (q) => request(`/codex/summary?q=${encodeURIComponent(q)}`),
+  updateCodexEntry: (id, payload) => request(`/codex/summary/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  listCodexEntries: () => request('/codex/entries'),
+  codexWordStudy: (payload) => request('/codex/word-study', { method: 'POST', body: JSON.stringify(payload) }),
+  getCodexSettings: () => request('/codex/settings'),
+  setCodexSettings: (payload) => request('/codex/settings', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Admin: Codex cache management
   listCodexCache: () => request('/admin/codex'),
@@ -110,6 +121,8 @@ export const api = {
   buildContext: (payload) => request('/context/build', { method: 'POST', body: JSON.stringify(payload) }),
   askAssistant: (payload) => request('/context/ask', { method: 'POST', body: JSON.stringify(payload) }),
   listRecentSessions: () => request('/context/sessions'),
+  searchSessions: (q) => request(`/context/sessions?q=${encodeURIComponent(q)}`),
+  getSessionsByReference: (reference) => request(`/context/sessions/${encodeURIComponent(reference)}`),
   getGuideForReference: (reference) => request(`/context/guide/${encodeURIComponent(reference)}`),
   renameSession: (id, title) => request(`/context/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
   buildWordStudyContext: (payload) => request('/word-study', { method: 'POST', body: JSON.stringify(payload) }),
@@ -135,7 +148,9 @@ export const api = {
   logout: () => request('/auth/logout', { method: 'POST' }),
   changePassword: (payload) => request('/auth/change-password', { method: 'POST', body: JSON.stringify(payload) }),
   createUser: (payload) => request('/auth/users', { method: 'POST', body: JSON.stringify(payload) }),
-  listUsers: () => request('/auth/users'),
+  listUsers: () => request('/admin/users'),
+  updateUser: (id, payload) => request(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteUser: (id) => request(`/admin/users/${id}`, { method: 'DELETE' }),
 
   // Admin
   getAdminMetrics: () => request('/admin/metrics'),

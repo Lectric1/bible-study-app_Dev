@@ -224,6 +224,13 @@ function PaneShell({ col, row, shared, layoutOps, primaryBiblePaneId, isDragging
                   </button>
                 )}
                 <div className="flex-1" />
+                <button
+                  onClick={() => setInterlinearMode((m) => !m)}
+                  title="Toggle interlinear mode"
+                  className={`mr-2 rounded border px-2 py-0.5 text-xs transition-colors ${interlinearMode ? 'border-verdigris text-verdigris' : 'border-rule text-muted hover:border-verdigris hover:text-parchment'}`}
+                >
+                  Interlinear
+                </button>
                 <ModulePicker
                   kind="bible"
                   excludeModules={[]}
@@ -271,13 +278,19 @@ function PaneShell({ col, row, shared, layoutOps, primaryBiblePaneId, isDragging
                       interlinearMode={interlinearMode}
                       onInterlinearToggle={() => setInterlinearMode((m) => !m)}
                       onNavigate={handleBibleNavigate}
+                      onScrollNavigate={(ref) => {
+                        if (activeTab) setBibleTabReference(col.id, row.id, activeTab.id, ref);
+                        syncFocusedReference(ref);
+                      }}
                       onOpenInTab={(ref) => openVerseTab(item.module, ref)}
                       onStrongsClick={onStrongsClick}
                       onVerseRefClick={onVerseRefClick}
                       onAnnotate={onAnnotate}
                       onAskAboutPassage={onAskAboutPassage}
                       onPhraseStudy={onPhraseStudy}
+                      onStudyInCodex={shared.onStudyInCodex}
                       onPersonalCommentarySaved={onPersonalCommentarySaved}
+                      onSearchTopical={openTopicalSearch}
                       isLoggedIn={Boolean(auth?.user)}
                     />
                   </div>

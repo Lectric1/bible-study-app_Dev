@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { buildPassageContext, askStudyAssistant } from '../services/contextBuilder.js';
 import { prisma } from '../db/prisma.js';
-import { requireLogin } from '../middleware/auth.js';
+import { requireLogin, requireAiEnabled } from '../middleware/auth.js';
 
 export const contextRouter = Router();
 
@@ -21,6 +21,7 @@ const aiLimiter = process.env.NODE_ENV === 'test' ? noop : rateLimit({
 // future route added here can't accidentally end up unprotected by
 // forgetting its own requireLogin call.
 contextRouter.use(requireLogin);
+contextRouter.use(requireAiEnabled);
 
 // POST /api/context/build
 // { sources: [{ module, reference, kind, title }], noteIds?: [], includeAllCommentaries?: bool, includeWordStudies?: bool }
@@ -127,11 +128,20 @@ contextRouter.get('/guide/:reference', async (req, res, next) => {
 // of registration order.
 contextRouter.get('/sessions', async (req, res, next) => {
   try {
+    const q = (req.query.q || '').trim();
+    const where = { userId: req.user.id };
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { reference: { contains: q, mode: 'insensitive' } },
+      ];
+    }
     res.json(
       await prisma.studySession.findMany({
-        where: { userId: req.user.id },
+        where,
         orderBy: { updatedAt: 'desc' },
-        take: 20,
+        take: q ? 10 : 20,
+        select: { id: true, title: true, reference: true, kind: true, updatedAt: true },
       })
     );
   } catch (err) {
