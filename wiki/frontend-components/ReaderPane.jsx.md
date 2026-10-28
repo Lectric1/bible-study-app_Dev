@@ -10,7 +10,7 @@ The core Bible-text reading pane used throughout the application. It fetches ver
 |---|---|---|
 | `module` | string | SWORD/MD module code (e.g. `KJV`, `md:MyCommentary`) |
 | `reference` | string | Passage reference (e.g. `John 3:16`, `Gen 1`) |
-| `focusMode` | bool | If true, loads the whole chapter and scrolls to the anchor verse; chapter header is hidden |
+| `focusMode` | bool | If true, enables continuous-scroll reading: loads the anchor chapter ± 1 neighbor, then lazy-loads more as the user scrolls. The outer reference header is hidden; per-chapter headers are rendered inline. |
 | `noScroll` | bool | Strips the outer scroll container (used when the parent handles scrolling) |
 | `showMarginalia` | bool | Whether to show the left-margin annotation tick and interlinear toggle |
 | `interlinearMode` | bool | Controlled interlinear toggle (uncontrolled fallback if omitted) |
@@ -24,17 +24,20 @@ The core Bible-text reading pane used throughout the application. It fetches ver
 | `onPhraseStudy` | func | `(phrase, module, strongsSequence) => void` |
 | `refreshNonce` | any | Changing this value re-triggers the verse/annotation fetch |
 | `onPersonalCommentarySaved` | func | Called after a note is saved via `VerseCommentaryEditor` |
+| `onSearchTopical` | func | `(query) => void` — called when a `.codex-inline-ref` span is clicked; routes to the Codex view |
 | `isLoggedIn` | bool | Enables group highlight and group finding fetching |
 
 ## State / Key Logic
 
-- **Verse loading**: `api.getPassage(module, reference)` on every `[module, reference, focusMode, refreshNonce]` change. Focus mode loads the whole chapter then scrolls to the target verse using `verseRefs` map. The "Loading passage…" indicator only renders when `verses.length === 0` (no prior content), and the verse block renders whenever `verses.length > 0` regardless of the `loading` flag — this keeps the current passage visible while a new one loads, preventing a blank-pane flash on navigation.
+- **Verse loading (non-focusMode)**: `api.getPassage(module, reference)` on every reference change. Single-chapter fetch; annotation load follows.
+- **Continuous reading (focusMode)**: On navigation to a new chapter, loads anchor ± 1 neighbor (3 total) via `loadSlotInPlace`. Chapter keys are tracked in `loadedSlotKeys` ref — if the reference changes to an already-loaded chapter, it simply scrolls to the anchor verse without a reload. IntersectionObserver sentinels at the top/bottom of the scroll container trigger lazy-loading of adjacent chapters as the user approaches the edges. `slotMetaRef` tracks the ordered list of loaded chapters; when the window exceeds 5 chapters the oldest is trimmed from `verses`, `highlightMap`, and group data. A scroll listener calls `onNavigate` whenever the chapter header closest to the viewport top changes, keeping `focusedReference` in sync.
 - **Annotation loading**: On verse load, fetches `api.listHighlights`, `api.listNotes` (for note count badge), and — when logged in — `api.listStudyGroupFindings` and `api.listStudyGroupHighlights` for the chapter prefix. Non-fatal; annotates optimistically.
 - **Verse segmentation**: `groupVerses()` groups contiguous verses into segments that share a header, inserting chapter headers and SWORD section titles between non-contiguous groups.
 - **Verse selection** (`selectedRange`): Clicking a verse superscript sets `anchor`/`focus` indices. Shift-click extends the range. A portal toolbar appears at the click point offering highlight swatches, note, share-finding, copy, and "Ask about this" buttons. Highlight operations are optimistic with real IDs backfilled.
 - **Phrase selection** (`phraseSelection`): `handleContentMouseUp` fires on text drag, reads `window.getSelection()`, strips xref/footnote marker characters via `extractCleanSelectionText`, and collects the Strong's keys of all `[data-strong]` words the selection overlaps. A separate portal toolbar offers highlight, note (with pre-filled quote), and phrase study buttons.
 - **Interlinear mode**: When on, calls `collectStrongsKeys` over all verses and batch-fetches transcriptions via `api.getStrongsEntry`, caching results in `strongsCache`. Renders each verse as stacked `(word, strongsKey, transcription)` columns using `parseVerseTokens`.
-- **Content click routing**: Delegates `.footnote-marker` clicks to `FootnotePopup`, `.xref-marker` to `onVerseRefClick`, `.verse-ref` to `onVerseRefClick`, and Strong's extraction to `onStrongsClick` via `extractStrongsData` (walks up to 4 DOM ancestors).
+- **Codex inline annotations**: On mount, fetches `api.listCodexEntries()` (a lightweight list of cached Codex queries and titles). Result is stored in a module-level cache so all `ReaderPane` instances share one request. Before each verse renders, `annotateCodexRefs(v.content, codexEntries)` (from `utils/codexAnnotate.js`) walks text nodes and wraps any matching word/phrase in a `<span class="codex-inline-ref" data-query="...">`. Multi-word queries are matched before single-word ones (longest-first). `<sup>` content (verse numbers, footnote markers) is skipped. Clicking calls `onSearchTopical(query)` which routes to the Codex.
+- **Content click routing**: Delegates `.codex-inline-ref` clicks to `onSearchTopical`, `.footnote-marker` clicks to `FootnotePopup`, `.xref-marker` to `onVerseRefClick`, `.verse-ref` to `onVerseRefClick`, and Strong's extraction to `onStrongsClick` via `extractStrongsData` (walks up to 4 DOM ancestors).
 - **Hover card**: `.xref-marker` and `.verse-ref` mouse-over triggers `VerseHoverCard` with a 150 ms debounced close.
 - **Group findings panel**: Renders a "Study Findings" section below the text when `groupFindings` is non-empty.
 
@@ -47,6 +50,8 @@ The core Bible-text reading pane used throughout the application. It fetches ver
 - `ShareFindingModal` — share a verse finding to a Study group
 - `api.getPassage`, `api.listHighlights`, `api.listNotes`, `api.createHighlight`, `api.deleteHighlight`, `api.listStudyGroupFindings`, `api.listStudyGroupHighlights`, `api.getStrongsEntry`
 - `parseVerseTokens`, `collectStrongsKeys` from `utils/parseInterlinear.js`
+- `annotateCodexRefs` from `utils/codexAnnotate.js`
+- `api.listCodexEntries`
 
 ## Notes
 

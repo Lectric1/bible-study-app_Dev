@@ -144,6 +144,14 @@ export default function CellView({
     function onKey(e) {
       const active = document.activeElement;
       const inInput = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || active?.isContentEditable;
+
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key === 'f') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       if (e.key === '/' && !inInput) {
@@ -304,17 +312,9 @@ export default function CellView({
     const firstBibleCol = layout.columns.find((c) => c.rows.some((r) => r.type === 'bible'));
     const firstBibleRow = firstBibleCol?.rows.find((r) => r.type === 'bible');
     if (firstBibleCol && firstBibleRow) {
-      const existingTab = firstBibleRow.tabs.find((t) => t.module === module);
-      if (existingTab) {
-        layout.setActiveTab(firstBibleCol.id, firstBibleRow.id, existingTab.id);
-        layout.setBibleTabReference(firstBibleCol.id, firstBibleRow.id, existingTab.id, osisRef);
-      } else {
-        const allTabs = layout.columns.flatMap((col) => col.rows.flatMap((row) => row.tabs));
-        const title = allTabs.find((t) => t.module === module)?.title || module;
-        navigateFocus(osisRef);
-        layout.addTab(firstBibleCol.id, firstBibleRow.id, module, title);
-        return;
-      }
+      const allTabs = layout.columns.flatMap((col) => col.rows.flatMap((row) => row.tabs));
+      const title = allTabs.find((t) => t.module === module)?.title || module;
+      layout.addTab(firstBibleCol.id, firstBibleRow.id, module, title, osisRef);
     }
     navigateFocus(osisRef);
   }
@@ -375,6 +375,12 @@ export default function CellView({
     onOpenCodex?.(searchTerm);
   }
 
+  function handleStudyInCodex(phrase, studyType, strongsSequence) {
+    if (!phrase) return;
+    const searchTerm = simplifyForTopicalSearch(phrase);
+    onOpenCodex?.(searchTerm, { wordStudy: true, studyType, strongsSequence: strongsSequence || [], originalPhrase: phrase });
+  }
+
   function routeToSearch(query) {
     const hasSearch = layout.columns.some((c) => c.rows.some((r) => r.type === 'search'));
     if (!hasSearch) {
@@ -383,6 +389,16 @@ export default function CellView({
       layout.splitPane(lastCol.id, lastRow.id, 'search');
     }
     setPendingSearch({ query, module: firstBibleTab?.module || '', nonce: Date.now() });
+  }
+
+  function routeToCommentarySearch(query) {
+    const hasSearch = layout.columns.some((c) => c.rows.some((r) => r.type === 'search'));
+    if (!hasSearch) {
+      const lastCol = layout.columns[layout.columns.length - 1];
+      const lastRow = lastCol.rows[lastCol.rows.length - 1];
+      layout.splitPane(lastCol.id, lastRow.id, 'search');
+    }
+    setPendingSearch({ query, module: '', tab: 'commentary', nonce: Date.now() });
   }
 
   function togglePaneType(type) {
@@ -419,6 +435,7 @@ export default function CellView({
     onAnnotate: onNavigateToLibrary,
     onAskAboutPassage: handleAskAboutPassage,
     onPhraseStudy: handlePhraseStudy,
+    onStudyInCodex: handleStudyInCodex,
     openStrongsInDictionary,
     openTopicalSearch,
     pendingDictKey,
@@ -466,7 +483,7 @@ export default function CellView({
 
         {/* Search */}
         <div className="min-w-0 flex-1">
-          <SearchBar ref={searchInputRef} activeModule={firstBibleTab?.module} onJump={navigateFocus} onSearch={routeToSearch} />
+          <SearchBar ref={searchInputRef} activeModule={firstBibleTab?.module} onJump={navigateFocus} onSearch={routeToSearch} onCommentarySearch={routeToCommentarySearch} />
         </div>
 
         {/* Window toggles — hidden on mobile (tab strip handles open/close/switch) */}
