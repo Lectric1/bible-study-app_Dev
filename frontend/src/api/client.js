@@ -44,9 +44,10 @@ export const api = {
   },
 
   // Notes / highlights / bookmarks
-  listNotes: ({ reference, prefix, q } = {}) => {
+  listNotes: ({ reference, prefix, q, freestanding } = {}) => {
     const params = new URLSearchParams();
-    if (reference) params.set('reference', reference);
+    if (freestanding) params.set('freestanding', 'true');
+    else if (reference) params.set('reference', reference);
     else if (prefix) params.set('prefix', prefix);
     if (q) params.set('q', q);
     const qs = params.toString();
@@ -77,12 +78,19 @@ export const api = {
 
   // PDF library
   listDocuments: () => request('/pdf'),
+  createExternalResource: (data) => request('/pdf/external', { method: 'POST', body: JSON.stringify(data) }),
   getDocument: (id) => request(`/pdf/${id}`),
   searchDocuments: (q) => request(`/pdf/search?q=${encodeURIComponent(q)}`),
   updateDocument: (id, patch) => request(`/pdf/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteDocument: (id) => request(`/pdf/${id}`, { method: 'DELETE' }),
   ocrDocument: (id) => request(`/pdf/${id}/ocr`, { method: 'POST' }),
   documentFileUrl: (id) => `${BASE}/pdf/${id}/file`,
+  exportLibrary: async () => {
+    const res = await fetch('/api/pdf/export');
+    if (!res.ok) throw new Error('Export failed');
+    return res.blob();
+  },
+  importLibrary: (entries) => request('/pdf/import', { method: 'POST', body: JSON.stringify(entries) }),
 
   // Topic / Codex cross-module search
   searchTopics: (q) => request(`/topics?q=${encodeURIComponent(q)}`),
@@ -123,6 +131,7 @@ export const api = {
   listRecentSessions: () => request('/context/sessions'),
   searchSessions: (q) => request(`/context/sessions?q=${encodeURIComponent(q)}`),
   getSessionsByReference: (reference) => request(`/context/sessions/${encodeURIComponent(reference)}`),
+  getSession: (id) => request(`/context/session/${encodeURIComponent(id)}`),
   getGuideForReference: (reference) => request(`/context/guide/${encodeURIComponent(reference)}`),
   renameSession: (id, title) => request(`/context/sessions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
   buildWordStudyContext: (payload) => request('/word-study', { method: 'POST', body: JSON.stringify(payload) }),
@@ -135,6 +144,20 @@ export const api = {
   getCommentaryEntry: (reference) => request(`/personal-modules/commentary-entry?reference=${encodeURIComponent(reference)}`),
   saveCommentaryNote: ({ reference, title, bodyMd }) =>
     request('/personal-modules/commentary-entry', { method: 'PUT', body: JSON.stringify({ reference, title, bodyMd }) }),
+  listAllCommentaryEntries: () => request('/personal-modules/entries'),
+  exportCommentary: async () => {
+    const res = await fetch('/api/personal-modules/export');
+    if (!res.ok) throw new Error('Export failed');
+    return res.blob();
+  },
+  importCommentary: async (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/personal-modules/import', { method: 'POST', body: form });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(body?.error || res.statusText || 'Import failed');
+    return body;
+  },
 
   // User profiles
   getUserProfile: (username) => request(`/users/${encodeURIComponent(username)}`),
@@ -305,6 +328,7 @@ export const api = {
   // Devotionals
   getTodaysDevotional: () => request('/devotionals/today'),
   listDevotionalModules: () => request('/devotionals/modules'),
+  getDevotionalSettings: () => request('/devotionals/settings'),
   setDevotionalModule: (moduleCode) => request('/devotionals/settings', { method: 'POST', body: JSON.stringify({ moduleCode }) }),
   debugDevotional: (moduleCode) => request(`/devotionals/debug${moduleCode ? `?module=${encodeURIComponent(moduleCode)}` : ''}`),
 
@@ -338,14 +362,26 @@ export const api = {
     const blob = await res.blob();
     const cd = res.headers.get('content-disposition') || '';
     const match = cd.match(/filename="([^"]+)"/);
-    const filename = match?.[1] || `study-${id}.json`;
+    const filename = match?.[1] || `study-${id}.zip`;
     return { blob, filename };
   },
 
-  importStudy: (scriptoriumId, data) =>
-    request('/studies/import', { method: 'POST', body: JSON.stringify({ scriptoriumId, data }) }),
+  importStudy: (scriptoriumId, fileOrData) => {
+    if (fileOrData instanceof Blob) {
+      const form = new FormData();
+      form.append('file', fileOrData);
+      if (scriptoriumId) form.append('scriptoriumId', scriptoriumId);
+      return request('/studies/import', { method: 'POST', body: form });
+    }
+    return request('/studies/import', { method: 'POST', body: JSON.stringify({ scriptoriumId, data: fileOrData }) });
+  },
 
   getAllMaps: () => request('/bible-maps/all'),
   getMapsForReference: (ref) =>
     request(`/bible-maps/for-reference?ref=${encodeURIComponent(ref)}`),
+
+  // e-Sword Library (eswordlibrary.com)
+  fetchESwordCatalog: () => request('/esword-library/catalog'),
+  installFromESwordLibrary: (downloadUrl) =>
+    request('/esword-library/install', { method: 'POST', body: JSON.stringify({ downloadUrl }) }),
 };
