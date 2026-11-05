@@ -267,3 +267,91 @@ export async function createTimeline(doc) {
 
   return timelineId;
 }
+// ─── Single-item updates (Phase 3: Inspector) ───────────────────────────────
+
+const NODE_FIELD_MAP = {
+  label: 'label',
+  kind: 'kind',
+  subtype: 'subtype',
+  time: 'timeJson',
+  displayOrder: 'displayOrder',
+  roles: 'rolesJson',
+  group: 'group',
+  tags: 'tagsJson',
+  terms: 'termsJson',
+  status: 'status',
+  author: 'authorJson',
+  genre: 'genre',
+  eventsDescribed: 'eventsDescribed',
+  trajectory: 'trajectory',
+  modernName: 'modernName',
+  coords: 'coordsJson',
+  siteCandidates: 'siteCandidatesJson',
+  image: 'image',
+  ref: 'ref',
+  source: 'sourceJson',
+  confidence: 'confidence',
+  locked: 'locked',
+  note: 'note',
+};
+
+const EDGE_FIELD_MAP = {
+  kind: 'kind',
+  subtype: 'subtype',
+  confidence: 'confidence',
+  source: 'sourceJson',
+  note: 'note',
+  claim: 'claim',
+  color: 'color',
+  locked: 'locked',
+};
+
+/**
+ * Updates a single node in the timeline.
+ *
+ * @param {string} timelineId
+ * @param {string} nodeId
+ * @param {object} fields - Partial node object (JSON field names, e.g. { label, time, tags })
+ * @returns {object} The updated node (serialized JSON shape)
+ * @throws {Error} 404 if node not found
+ */
+export async function updateNode(timelineId, nodeId, fields) {
+  const data = {};
+  for (const [jsonKey, colKey] of Object.entries(NODE_FIELD_MAP)) {
+    if (jsonKey in fields) {
+      data[colKey] = fields[jsonKey] ?? null;
+    }
+  }
+
+  const updated = await prisma.node.update({
+    where: { timelineId_id: { timelineId, id: nodeId } },
+    data,
+  });
+
+  return mapNodeFromRow(updated);
+}
+
+/**
+ * Updates a single edge in the timeline.
+ *
+ * @param {string} timelineId
+ * @param {string} edgeId
+ * @param {object} fields - Partial edge object (JSON field names, e.g. { confidence, color })
+ * @returns {object} The updated edge (serialized JSON shape)
+ * @throws {Error} 404 if edge not found
+ */
+export async function updateEdge(timelineId, edgeId, fields) {
+  const data = {};
+  for (const [jsonKey, colKey] of Object.entries(EDGE_FIELD_MAP)) {
+    if (jsonKey in fields) {
+      data[colKey] = fields[jsonKey] ?? null;
+    }
+  }
+
+  const updated = await prisma.edge.update({
+    where: { timelineId_id: { timelineId, id: edgeId } },
+    data,
+  });
+
+  return mapEdgeFromRow(updated);
+}

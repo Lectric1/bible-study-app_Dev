@@ -484,3 +484,7 @@ export const api = {
       }
       return request('/timelines/import', { method: 'POST', body: JSON.stringify({ data: fileOrData }) });
     },
+    updateNode: (timelineId, nodeId, patch) =>
+    request(`/timelines/${timelineId}/nodes/${encodeURIComponent(nodeId)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+    updateEdge: (timelineId, edgeId, patch) =>
+    request(`/timelines/${timelineId}/edges/${encodeURIComponent(edgeId)}`, { method: 'PATCH', body: JSON.stringify(patch) }),
