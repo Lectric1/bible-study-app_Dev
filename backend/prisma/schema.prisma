@@ -643,3 +643,122 @@ model UserLayerConfig {
   @@index([layerId])
 }
 
+
+// ─── Timeline Module ───────────────────────────────────────────────
+
+model Timeline {
+  id                String   @id @default(cuid())
+  title             String
+  author            String
+  schemaVersion     Int      @default(1)
+  version           Int      @default(1)
+  defaultChronology String
+  yearStart         Int
+  yearEnd           Int
+  blackAndWhite     Boolean  @default(false)
+  activeSessionId   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  nodes         Node[]
+  edges         Edge[]
+  displayTracks DisplayTrack[]
+
+  @@map("timelines")
+}
+
+model Node {
+  id               String  @id
+  timelineId       String
+  kind             String
+  label            String
+  subtype          String?
+  timeJson         Json?
+  displayOrder     Int?
+  rolesJson        Json?
+  group            String?
+  tagsJson         Json?
+  termsJson        Json?
+  status           String?
+  authorJson       Json?
+  genre            String?
+  eventsDescribed  String?
+  trajectory       String?
+  modernName       String?
+  coordsJson       Json?
+  siteCandidatesJson Json?
+  image            String?
+  ref              String?
+  sourceJson       Json?
+  confidence       String?
+  locked           Boolean @default(false)
+  note             String?
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@index([timelineId, kind])
+  @@index([timelineId, confidence])
+  @@map("timeline_nodes")
+}
+
+model Edge {
+  id          String  @id
+  timelineId  String
+  fromId      String
+  toId        String
+  kind        String
+  subtype     String?
+  confidence  String
+  sourceJson  Json?
+  note        String?
+  claim       String?
+  color       String?
+  locked      Boolean @default(false)
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@index([timelineId, fromId])
+  @@index([timelineId, toId])
+  @@index([timelineId, kind])
+  @@map("timeline_edges")
+}
+
+model DisplayTrack {
+  id          String @id
+  timelineId  String
+  label       String
+  color       String
+  filter      String
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@map("timeline_display_tracks")
+}
+
+model Template {
+  id             String   @id
+  name           String
+  description    String?
+  schemaVersion  Int      @default(1)
+  nodesJson      Json
+  edgesJson      Json
+  displayJson    Json?
+  tagsJson       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("timeline_templates")
+}
+
+model UserPreference {
+  id        String @id @default(cuid())
+  key       String
+  valueJson Json
+
+  @@unique([key])
+  @@map("timeline_user_preferences")
+}
+

@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "title": "All Kinds",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "standard",
+    "yearRange": [-3000, 100]
+  },
+  "nodes": [
+    { "id": "n-event", "kind": "event", "label": "Event" },
+    { "id": "n-span", "kind": "span", "label": "Span" },
+    { "id": "n-person", "kind": "person", "label": "Person" },
+    { "id": "n-place", "kind": "place", "label": "Place" },
+    { "id": "n-covenant", "kind": "covenant", "label": "Covenant" },
+    { "id": "n-book", "kind": "book", "label": "Book" },
+    { "id": "n-political", "kind": "political", "label": "Political" },
+    { "id": "n-theme", "kind": "theme", "label": "Theme" },
+    { "id": "n-period", "kind": "period", "label": "Period" }
+  ],
+  "edges": [
+    { "id": "e-causes", "from": "n-event", "to": "n-span", "kind": "causes", "confidence": "certain" },
+    { "id": "e-precedes", "from": "n-span", "to": "n-period", "kind": "precedes", "confidence": "certain" },
+    { "id": "e-concurrent", "from": "n-person", "to": "n-place", "kind": "concurrent", "confidence": "certain" },
+    { "id": "e-contains", "from": "n-period", "to": "n-span", "kind": "contains", "confidence": "certain" },
+    { "id": "e-synchronizes", "from": "n-political", "to": "n-covenant", "kind": "synchronizes", "confidence": "certain" },
+    { "id": "e-responds", "from": "n-person", "to": "n-event", "kind": "responds", "confidence": "certain" },
+    { "id": "e-prophesies", "from": "n-person", "to": "n-event", "kind": "prophesies", "confidence": "certain" },
+    { "id": "e-fulfills", "from": "n-event", "to": "n-theme", "kind": "fulfills", "confidence": "certain" },
+    { "id": "e-types", "from": "n-event", "to": "n-covenant", "kind": "types", "confidence": "certain" },
+    { "id": "e-escalates", "from": "n-covenant", "to": "n-theme", "kind": "escalates", "confidence": "certain" },
+    { "id": "e-contrasts", "from": "n-theme", "to": "n-period", "kind": "contrasts", "confidence": "certain" },
+    { "id": "e-covenants", "from": "n-person", "to": "n-covenant", "kind": "covenants", "confidence": "certain" },
+    { "id": "e-father_of", "from": "n-person", "to": "n-person", "kind": "father_of", "confidence": "certain" },
+    { "id": "e-teacher_of", "from": "n-person", "to": "n-book", "kind": "teacher_of", "confidence": "certain" },
+    { "id": "e-succeeds", "from": "n-political", "to": "n-person", "kind": "succeeds", "confidence": "certain" },
+    { "id": "e-rival_of", "from": "n-person", "to": "n-political", "kind": "rival_of", "confidence": "certain" },
+    { "id": "e-allied_with", "from": "n-political", "to": "n-place", "kind": "allied_with", "confidence": "certain" },
+    { "id": "e-vassal_of", "from": "n-political", "to": "n-place", "kind": "vassal_of", "confidence": "certain" },
+    { "id": "e-located_in", "from": "n-person", "to": "n-place", "kind": "located_in", "confidence": "certain" },
+    { "id": "e-governs", "from": "n-political", "to": "n-place", "kind": "governs", "confidence": "certain" },
+    { "id": "e-part_of", "from": "n-book", "to": "n-person", "kind": "part_of", "confidence": "certain" },
+    { "id": "e-echoes", "from": "n-theme", "to": "n-event", "kind": "echoes", "confidence": "certain" },
+    { "id": "e-references", "from": "n-book", "to": "n-event", "kind": "references", "confidence": "certain" }
+  ]
+}   

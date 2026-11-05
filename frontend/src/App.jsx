@@ -1,6 +1,9 @@
 import BootstrapScreen from './components/BootstrapScreen.jsx';
 import AppShell from './components/AppShell.jsx';
 import { useAuth } from './hooks/useAuth.js';
+import timelinesRouter from "./routes/timelines.js";
+
+app.use("/api/timelines", timelinesRouter);
 
 export default function App() {
   const auth = useAuth();

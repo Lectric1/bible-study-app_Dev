@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "timeline.schema.json",
+  "title": "GSSParks Bible Timeline Document",
+  "type": "object",
+  "required": ["meta", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": { "$ref": "#/$defs/meta" },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    },
+    "display": { "$ref": "#/$defs/display" }
+  },
+
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "required": ["title", "author", "schemaVersion", "version", "defaultChronology", "yearRange"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "author": { "type": "string" },
+        "schemaVersion": { "type": "integer", "minimum": 1 },
+        "version": { "type": "integer", "minimum": 1 },
+        "defaultChronology": {
+          "type": "string",
+          "enum": ["thiele", "early", "late", "ussher", "standard"]
+        },
+        "yearRange": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+
+    "nodeKind": {
+      "type": "string",
+      "enum": ["event", "span", "person", "place", "covenant", "book", "political", "theme", "period"]
+    },
+
+    "edgeKind": {
+      "type": "string",
+      "enum": [
+        "causes", "precedes", "concurrent", "contains", "synchronizes",
+        "responds", "prophesies", "fulfills", "types", "escalates", "contrasts", "covenants",
+        "father_of", "teacher_of", "succeeds", "rival_of", "allied_with", "vassal_of", "located_in", "governs",
+        "part_of", "echoes", "references"
+      ]
+    },
+
+    "timeConfidence": {
+      "type": "string",
+      "enum": ["exact", "approximate", "disputed", "undated"]
+    },
+
+    "nodeConfidence": {
+      "type": "string",
+      "enum": ["scriptural", "traditional", "archaeological", "inferred"]
+    },
+
+    "edgeConfidence": {
+      "type": "string",
+      "enum": ["certain", "probable", "traditional", "speculative"]
+    },
+
+    "timeStamp": {
+      "type": "object",
+      "required": ["confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "anchor": { "type": "string" },
+        "statedLength": { "type": "number" },
+        "statedUnit": {
+          "type": "string",
+          "enum": ["years", "months", "days", "generations"]
+        },
+        "derived": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": { "type": "number" },
+            "end": { "type": "number" },
+            "chronology": { "type": "string" }
+          }
+        },
+        "confidence": { "$ref": "#/$defs/timeConfidence" },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["year", "chronology"],
+            "additionalProperties": false,
+            "properties": {
+              "year": { "type": "number" },
+              "chronology": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "derivation": {
+          "type": "object",
+          "required": ["steps"],
+          "additionalProperties": false,
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "sources": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "covenantTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "promise": { "type": "string" },
+        "condition": { "type": "string" },
+        "sign": { "type": "string" }
+      }
+    },
+
+    "bookAuthor": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "disputed": { "type": "boolean" }
+      }
+    },
+
+    "node": {
+      "type": "object",
+      "required": ["id", "kind", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/nodeKind" },
+        "label": { "type": "string", "minLength": 1 },
+        "subtype": { "type": "string" },
+        "time": { "$ref": "#/$defs/timeStamp" },
+        "displayOrder": { "type": "number" },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "group": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "terms": { "$ref": "#/$defs/covenantTerms" },
+        "status": {
+          "type": "string",
+          "enum": ["active", "fulfilled", "superseded", "awaiting"]
+        },
+        "author": { "$ref": "#/$defs/bookAuthor" },
+        "genre": { "type": "string" },
+        "eventsDescribed": { "type": "string" },
+        "trajectory": {
+          "type": "string",
+          "enum": ["rising", "stable", "declining", "collapsed"]
+        },
+        "modernName": { "type": "string" },
+        "coords": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "siteCandidates": { "type": "array", "items": { "type": "string" } },
+        "image": { "type": "string" },
+        "ref": { "type": "string" },
+        "source": { "type": "array", "items": { "type": "string" } },
+        "confidence": { "$ref": "#/$defs/nodeConfidence" },
+        "locked": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "edge": {
+      "type": "object",
+      "required": ["id", "from", "to", "kind", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/edgeKind" },
+        "subtype": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/edgeConfidence" },
+        "source": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" },
+        "claim": { "type": "string" },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "locked": { "type": "boolean" }
+      }
+    },
+
+    "display": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "blackAndWhite": { "type": "boolean" },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "color", "filter"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "label": { "type": "string" },
+              "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+              "filter": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

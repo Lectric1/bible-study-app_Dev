@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Future",
+    "author": "Test",
+    "schemaVersion": 99,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    { "id": "x", "kind": "event", "label": "X" }
+  ],
+  "edges": []
+}   

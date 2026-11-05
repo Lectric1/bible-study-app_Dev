@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "title": "Dup ID",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    { "id": "dup", "kind": "event", "label": "First" },
+    { "id": "dup", "kind": "person", "label": "Second" }
+  ],
+  "edges": []
+}   
