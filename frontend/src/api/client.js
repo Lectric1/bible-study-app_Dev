@@ -384,4 +384,30 @@ export const api = {
   fetchESwordCatalog: () => request('/esword-library/catalog'),
   installFromESwordLibrary: (downloadUrl) =>
     request('/esword-library/install', { method: 'POST', body: JSON.stringify({ downloadUrl }) }),
-};
+
+    // ─── Timelines ───────────────────────────────────────────────────────────────
+
+    listTimelines: () => request('/timelines'),
+    getTimeline: (id) => request(`/timelines/${id}`),
+
+    exportTimeline: async (id) => {
+      const res = await fetch(`/api/timelines/${id}/export`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Export failed: ${res.status}`);
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get('content-disposition') || '';
+      const match = cd.match(/filename="([^"]+)"/);
+      const filename = match?.[1] || `timeline-${id}.timeline.json`;
+      return { blob, filename };
+    },
+
+    importTimeline: (fileOrData) => {
+      if (fileOrData instanceof Blob) {
+        const form = new FormData();
+        form.append('file', fileOrData);
+        return request('/timelines/import', { method: 'POST', body: form });
+      }
+      return request('/timelines/import', { method: 'POST', body: JSON.stringify({ data: fileOrData }) });
+    },

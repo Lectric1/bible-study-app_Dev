@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "title": "Bad Ref",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    { "id": "a", "kind": "event", "label": "A" }
+  ],
+  "edges": [
+    { "id": "e1", "from": "ghost", "to": "a", "kind": "precedes", "confidence": "certain" }
+  ]
+}   

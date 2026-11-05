@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Minimal",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    { "id": "evt-single", "kind": "event", "label": "Single Event" }
+  ],
+  "edges": []
+}   

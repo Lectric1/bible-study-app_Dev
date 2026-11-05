@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "title": "Exodus Cluster",
+    "author": "GSSParks",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    {
+      "id": "evt-exodus",
+      "kind": "event",
+      "label": "The Exodus",
+      "subtype": "miracle",
+      "time": {
+        "confidence": "disputed",
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "derivation": {
+          "steps": ["1 Kgs 6:1: 480 years after Exodus", "966 + 480 = 1446 BC"],
+          "sources": ["1 Kgs 6:1", "2 Kgs 22:1"]
+        },
+        "alternatives": [{ "year": -1270, "chronology": "late", "note": "Thiele: 480 is rounded" }]
+      },
+      "source": ["Exod 12:31-42", "Exod 13:18-16:35"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "redemption"],
+      "displayOrder": 3
+    },
+    {
+      "id": "evt-red-sea",
+      "kind": "event",
+      "label": "Crossing the Red Sea",
+      "subtype": "miracle",
+      "time": { "confidence": "approximate", "derived": { "start": -1446, "chronology": "thiele" } },
+      "source": ["Exod 14:21-31"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "miracle"],
+      "displayOrder": 4
+    },
+    {
+      "id": "evt-sinai",
+      "kind": "event",
+      "label": "Covenant at Sinai",
+      "time": { "confidence": "approximate", "derived": { "start": -1446, "chronology": "thiele" } },
+      "source": ["Exod 19-24"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "law"],
+      "displayOrder": 5
+    },
+    {
+      "id": "person-moses",
+      "kind": "person",
+      "label": "Moses",
+      "roles": ["prophet", "mediator"],
+      "group": "israel",
+      "time": {
+        "confidence": "approximate",
+        "derived": { "start": -1526, "end": -1406, "chronology": "thiele" },
+        "derivation": {
+          "steps": ["Born ~80 years before Exodus (Exod 7:7)", "Died 40 years after Exodus (Deut 34:8)"],
+          "sources": ["Exod 7:7", "Deut 34:7-8"]
+        }
+      },
+      "source": ["Exod 2-4", "Deut 34"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "mediator"],
+      "displayOrder": 6
+    },
+    {
+      "id": "covenant-abrahamic",
+      "kind": "covenant",
+      "label": "Abrahamic Covenant",
+      "terms": {
+        "promise": "Land, seed, blessing to all nations",
+        "condition": "Walk before me and be blameless",
+        "sign": "Circumcision"
+      },
+      "status": "active",
+      "time": { "confidence": "approximate", "derived": { "start": -2091, "chronology": "standard" } },
+      "source": ["Gen 12:1-3", "Gen 15:1-21"],
+      "confidence": "scriptural",
+      "tags": ["covenant", "promise"],
+      "displayOrder": 7
+    },
+    {
+      "id": "covenant-mosaic",
+      "kind": "covenant",
+      "label": "Mosaic Covenant",
+      "terms": {
+        "promise": "Treasured possession",
+        "condition": "Obey my voice",
+        "sign": "Sabbath"
+      },
+      "status": "superseded",
+      "time": { "confidence": "approximate", "derived": { "start": -1446, "chronology": "thiele" } },
+      "source": ["Exod 19-24"],
+      "confidence": "scriptural",
+      "tags": ["covenant", "law"],
+      "displayOrder": 8
+    },
+    {
+      "id": "place-sinai",
+      "kind": "place",
+      "label": "Mount Sinai",
+      "modernName": "Jebel Musa (traditional)",
+      "coords": [28.539, 33.973],
+      "siteCandidates": ["Jebel Musa, Sinai Peninsula", "Mount Kharith, north Arabia"],
+      "confidence": "traditional",
+      "tags": ["location", "disputed-site"],
+      "displayOrder": 9
+    },
+    {
+      "id": "span-egypt",
+      "kind": "span",
+      "label": "Israel in Egypt",
+      "time": {
+        "confidence": "disputed",
+        "derived": { "start": -1876, "end": -1446, "chronology": "thiele" },
+        "statedLength": 430,
+        "statedUnit": "years",
+        "anchor": "430 years (Exod 12:40)"
+      },
+      "displayOrder": 2
+    },
+    {
+      "id": "period-patriarchal",
+      "kind": "period",
+      "label": "Patriarchal Period",
+      "time": { "confidence": "approximate", "derived": { "start": -2091, "end": -1876, "chronology": "standard" } },
+      "note": "From Abraham's call to Israel's entry into Egypt.",
+      "displayOrder": 1
+    },
+    {
+      "id": "political-egypt",
+      "kind": "political",
+      "label": "New Kingdom Egypt",
+      "trajectory": "stable",
+      "group": "world",
+      "time": { "confidence": "exact", "derived": { "start": -1550, "end": -1070, "chronology": "standard" } },
+      "source": ["Egyptian king lists"],
+      "confidence": "archaeological",
+      "tags": ["world-history", "empire"],
+      "displayOrder": 10
+    },
+    {
+      "id": "book-exodus",
+      "kind": "book",
+      "label": "Exodus",
+      "author": { "name": "Moses", "disputed": false },
+      "genre": "Narrative / Law",
+      "eventsDescribed": "-1446 to -1445",
+      "time": { "confidence": "approximate", "derived": { "start": -1446, "chronology": "thiele" } },
+      "confidence": "traditional",
+      "tags": ["pentateuch", "torah"],
+      "displayOrder": 15
+    },
+    {
+      "id": "theme-redemption",
+      "kind": "theme",
+      "label": "Redemption",
+      "note": "Deliverance from bondage: Egypt, Exile, Sin.",
+      "tags": ["theme", "messianic"],
+      "displayOrder": 17
+    }
+  ],
+  "edges": [
+    { "id": "e-001", "from": "span-egypt", "to": "evt-exodus", "kind": "contains", "confidence": "certain", "note": "Span ends at Exodus." },
+    { "id": "e-002", "from": "evt-exodus", "to": "evt-red-sea", "kind": "contains", "confidence": "certain" },
+    { "id": "e-003", "from": "evt-exodus", "to": "evt-sinai", "kind": "precedes", "confidence": "certain", "note": "~3 months later." },
+    { "id": "e-004", "from": "evt-sinai", "to": "covenant-mosaic", "kind": "covenants", "confidence": "certain" },
+    { "id": "e-005", "from": "covenant-abrahamic", "to": "covenant-mosaic", "kind": "escalates", "confidence": "traditional", "claim": "Mosaic gives Abrahamic promise legal form.", "color": "#7c3aed" },
+    { "id": "e-006", "from": "evt-exodus", "to": "evt-red-sea", "kind": "types", "confidence": "traditional", "subtype": "provision", "claim": "Passing through sea prefigures baptism (1 Pet 3:21).", "color": "#0891b2" },
+    { "id": "e-007", "from": "person-moses", "to": "evt-exodus", "kind": "responds", "confidence": "certain" },
+    { "id": "e-008", "from": "evt-sinai", "to": "place-sinai", "kind": "located_in", "confidence": "certain" },
+    { "id": "e-009", "from": "person-moses", "to": "covenant-mosaic", "kind": "covenants", "confidence": "certain", "note": "Moses is the mediator." },
+    { "id": "e-014", "from": "political-egypt", "to": "span-egypt", "kind": "governs", "confidence": "certain" },
+    { "id": "e-019", "from": "book-exodus", "to": "evt-exodus", "kind": "references", "confidence": "certain" },
+    { "id": "e-021", "from": "theme-redemption", "to": "evt-exodus", "kind": "echoes", "confidence": "probable" },
+    { "id": "e-026", "from": "period-patriarchal", "to": "span-egypt", "kind": "precedes", "confidence": "certain" },
+    { "id": "e-030", "from": "person-moses", "to": "book-exodus", "kind": "part_of", "confidence": "certain", "locked": true }
+  ],
+  "display": {
+    "blackAndWhite": false,
+    "tracks": [
+      { "id": "track-miracles", "label": "Miracles", "color": "#dc2626", "filter": "subtype == 'miracle'" },
+      { "id": "track-covenants", "label": "Covenants", "color": "#7c3aed", "filter": "kind == 'covenant'" }
+    ]
+  }
+}   

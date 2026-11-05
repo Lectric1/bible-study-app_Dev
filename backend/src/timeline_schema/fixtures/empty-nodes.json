@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "Empty",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-2000, 0]
+  },
+  "nodes": [],
+  "edges": []
+}   

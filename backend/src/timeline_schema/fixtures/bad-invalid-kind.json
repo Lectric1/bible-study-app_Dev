@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Bad Kind",
+    "author": "Test",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    { "id": "x", "kind": "alien", "label": "X" }
+  ],
+  "edges": []
+}   
