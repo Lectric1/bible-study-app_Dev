@@ -148,6 +148,12 @@ model User {
   studyComments      StudyComment[]
   studyCommentLikes  StudyCommentLike[]
   readingPlanProgress ReadingPlanProgress[]
+  calendarLayers      CalendarLayer[]
+  calendarLayerShares CalendarLayerShare[]
+  calendarPrintConfigs CalendarPrintConfig[]
+  calendarLayerVisibilities    UserLayerVisibility[]
+  dayImages DayImage[]
+  layerConfigs UserLayerConfig[]
 }
 
 // Mutual-acceptance connections ("Fellows" in the UI). One row per
@@ -521,8 +527,6 @@ model StudyHighlight {
   @@index([studyId])
   @@index([studyId, reference])
 }
-<<<<<<< Updated upstream
-=======
 
 model CalendarLayer {
   id             String   @id @default(cuid())
@@ -638,6 +642,7 @@ model UserLayerConfig {
   @@id([userId, layerId])
   @@index([layerId])
 }
+
 
 // ─── Timeline Module ───────────────────────────────────────────────
 
@@ -757,4 +762,3 @@ model UserPreference {
   @@map("timeline_user_preferences")
 }
 
->>>>>>> Stashed changes
