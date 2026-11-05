@@ -521,3 +521,240 @@ model StudyHighlight {
   @@index([studyId])
   @@index([studyId, reference])
 }
+<<<<<<< Updated upstream
+=======
+
+model CalendarLayer {
+  id             String   @id @default(cuid())
+  userId         String?  // null = system/built-in layer
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  color          String
+  calendarSystem String   @default("gregorian") // "gregorian" | "hebrew"
+  visible        Boolean  @default(true)
+  isBuiltIn      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  entries    CalendarEntry[]
+  shares     CalendarLayerShare[]
+  userLayerVisibilities UserLayerVisibility[]
+  userConfigs UserLayerConfig[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model UserLayerVisibility {
+  userId    String
+  layerId   String
+  visible   Boolean  @default(true)
+  ser      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  layer     CalendarLayer @relation(fields: [layerId], references: [id], onDelete: Cascade)
+
+  @@id([userId, layerId])
+}
+
+model CalendarEntry {
+  id          String        @id @default(cuid())
+  layerId     String
+  layer       CalendarLayer @relation(fields: [layerId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  year        Int
+  month       Int
+  day         Int?
+  recurrence  String?       // RRULE subset, e.g. "FREQ=YEARLY;BYMONTH=4;BYMONTHDAY=15"
+  icon        String?
+  reference   String?       // optional scripture ref
+  module      String?
+  createdAt   DateTime      @default(now())
+
+  @@index([layerId, year, month])
+  @@index([layerId, year])
+}
+
+model CalendarLayerShare {
+  id        String        @id @default(cuid())
+  layerId   String
+  layer     CalendarLayer @relation(fields: [layerId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String        @default("viewer") // "viewer" | "editor"
+  createdAt DateTime      @default(now())
+
+  @@unique([layerId, userId])
+  @@index([userId])
+}
+
+model CalendarPrintConfig {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year               Int
+  layout             String   @default("single-month") // "single-month" | "2-month" | "quarterly" | "12-month"
+  paper              String   @default("letter")       // "letter" | "a4"
+  orientation        String   @default("portrait")     // "portrait" | "landscape"
+  layerIds           String[]
+  coverImageId       String?
+  coverTitle         String?
+  coverVerseRef      String?
+  coverVerseText     String?
+  dayBgImageIds      Json?    // {"1": "img-cuid", "2": "img-cuid", ...} or per-month
+  overlayOpacity     Float    @default(0.65)
+  showWeekdayHeaders Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId, year])
+
+}
+
+model DayImage {
+  id        String   @id @default(cuid())
+  year      Int
+  month     Int
+  day       Int
+  imageUrl  String
+  layerId   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([year, month, day, layerId])
+  @@index([userId, year, month])
+}
+
+model UserLayerConfig {
+  userId    String
+  layerId   String
+  config    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  layer CalendarLayer @relation(fields: [layerId], references: [id], onDelete: Cascade)
+
+  @@id([userId, layerId])
+  @@index([layerId])
+}
+
+// ─── Timeline Module ───────────────────────────────────────────────
+
+model Timeline {
+  id                String   @id @default(cuid())
+  title             String
+  author            String
+  schemaVersion     Int      @default(1)
+  version           Int      @default(1)
+  defaultChronology String
+  yearStart         Int
+  yearEnd           Int
+  blackAndWhite     Boolean  @default(false)
+  activeSessionId   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  nodes         Node[]
+  edges         Edge[]
+  displayTracks DisplayTrack[]
+
+  @@map("timelines")
+}
+
+model Node {
+  id               String  @id
+  timelineId       String
+  kind             String
+  label            String
+  subtype          String?
+  timeJson         Json?
+  displayOrder     Int?
+  rolesJson        Json?
+  group            String?
+  tagsJson         Json?
+  termsJson        Json?
+  status           String?
+  authorJson       Json?
+  genre            String?
+  eventsDescribed  String?
+  trajectory       String?
+  modernName       String?
+  coordsJson       Json?
+  siteCandidatesJson Json?
+  image            String?
+  ref              String?
+  sourceJson       Json?
+  confidence       String?
+  locked           Boolean @default(false)
+  note             String?
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@index([timelineId, kind])
+  @@index([timelineId, confidence])
+  @@map("timeline_nodes")
+}
+
+model Edge {
+  id          String  @id
+  timelineId  String
+  fromId      String
+  toId        String
+  kind        String
+  subtype     String?
+  confidence  String
+  sourceJson  Json?
+  note        String?
+  claim       String?
+  color       String?
+  locked      Boolean @default(false)
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@index([timelineId, fromId])
+  @@index([timelineId, toId])
+  @@index([timelineId, kind])
+  @@map("timeline_edges")
+}
+
+model DisplayTrack {
+  id          String @id
+  timelineId  String
+  label       String
+  color       String
+  filter      String
+
+  timeline Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+
+  @@unique([timelineId, id])
+  @@map("timeline_display_tracks")
+}
+
+model Template {
+  id             String   @id
+  name           String
+  description    String?
+  schemaVersion  Int      @default(1)
+  nodesJson      Json
+  edgesJson      Json
+  displayJson    Json?
+  tagsJson       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("timeline_templates")
+}
+
+model UserPreference {
+  id        String @id @default(cuid())
+  key       String
+  valueJson Json
+
+  @@unique([key])
+  @@map("timeline_user_preferences")
+}
+
+>>>>>>> Stashed changes
