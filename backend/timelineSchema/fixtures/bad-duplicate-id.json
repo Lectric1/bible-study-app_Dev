@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Bad: Duplicate ID",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1000, 0]
+  },
+  "nodes": [
+    { "id": "n-a", "kind": "event", "label": "Node A", "time": { "derived": { "start": -500 }, "confidence": "exact" } },
+    { "id": "n-a", "kind": "person", "label": "Node A Duplicate" }
+  ],
+  "edges": []
+}

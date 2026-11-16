@@ -29,6 +29,8 @@ services:
     restart: unless-stopped
 
   db:
+    ports:
+      - "5432:5432"
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: bible

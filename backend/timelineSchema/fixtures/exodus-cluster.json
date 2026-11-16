@@ -1,0 +1,389 @@
+{
+  "meta": {
+    "title": "Seed: Exodus to Divided Monarchy",
+    "author": "GSSParks",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -930]
+  },
+  "nodes": [
+    {
+      "id": "period-patriarchal",
+      "kind": "period",
+      "label": "Patriarchal Period",
+      "time": {
+        "derived": { "start": -2091, "end": -1876, "chronology": "standard" },
+        "confidence": "approximate"
+      },
+      "note": "From Abraham's call to Israel's entry into Egypt.",
+      "displayOrder": 1
+    },
+    {
+      "id": "span-egypt",
+      "kind": "span",
+      "label": "Israel in Egypt",
+      "time": {
+        "derived": { "start": -1876, "end": -1446, "chronology": "thiele" },
+        "confidence": "disputed",
+        "statedLength": 430,
+        "statedUnit": "years",
+        "anchor": "430 years (Exod 12:40)",
+        "alternatives": [
+          { "year": -1270, "chronology": "late", "note": "Thiele: 480 is rounded" }
+        ]
+      },
+      "note": "From Jacob's descent to the Exodus.",
+      "displayOrder": 2
+    },
+    {
+      "id": "evt-exodus",
+      "kind": "event",
+      "label": "The Exodus",
+      "subtype": "miracle",
+      "time": {
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "confidence": "disputed",
+        "derivation": {
+          "steps": [
+            "1 Kgs 6:1: temple built 480 years after Exodus",
+            "Temple 4th year of Solomon = 966 BC (synchronism with Assyrian records)",
+            "966 + 480 = 1446 BC"
+          ],
+          "sources": ["1 Kgs 6:1", "2 Kgs 22:1", "Assyrian king list (Tiglath-Pileser III)"]
+        },
+        "alternatives": [
+          { "year": -1270, "chronology": "late", "note": "Thiele: 480 is rounded" }
+        ]
+      },
+      "source": ["Exod 12:31-42", "Exod 13:18-16:35"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "messianic", "redemption"],
+      "displayOrder": 3
+    },
+    {
+      "id": "evt-red-sea",
+      "kind": "event",
+      "label": "Crossing the Red Sea",
+      "subtype": "miracle",
+      "time": {
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "confidence": "approximate"
+      },
+      "source": ["Exod 14:21-31"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "miracle"],
+      "displayOrder": 4
+    },
+    {
+      "id": "evt-sinai",
+      "kind": "event",
+      "label": "Covenant at Sinai",
+      "time": {
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "confidence": "approximate"
+      },
+      "source": ["Exod 19-24"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "law"],
+      "displayOrder": 5
+    },
+    {
+      "id": "person-moses",
+      "kind": "person",
+      "label": "Moses",
+      "roles": ["prophet", "judge", "mediator"],
+      "group": "israel",
+      "time": {
+        "derived": { "start": -1526, "end": -1406, "chronology": "thiele" },
+        "confidence": "approximate",
+        "derivation": {
+          "steps": [
+            "Born ~80 years before Exodus (Exod 7:7)",
+            "Exodus = 1446 BC, born ~1526 BC",
+            "Died 40 years after Exodus (Deut 34:8), 1406 BC"
+          ],
+          "sources": ["Exod 7:7", "Deut 34:7-8"]
+        }
+      },
+      "source": ["Exod 2-4", "Deut 34"],
+      "confidence": "scriptural",
+      "tags": ["pentateuch", "mediator"],
+      "displayOrder": 6
+    },
+    {
+      "id": "covenant-abrahamic",
+      "kind": "covenant",
+      "label": "Abrahamic Covenant",
+      "terms": {
+        "promise": "Land, seed, blessing to all nations (Gen 12:1-3, 15:1-6, 17:1-8)",
+        "condition": "Walk before me and be blameless (Gen 17:1)",
+        "sign": "Circumcision (Gen 17:11)"
+      },
+      "status": "active",
+      "time": {
+        "derived": { "start": -2091, "chronology": "standard" },
+        "confidence": "approximate"
+      },
+      "source": ["Gen 12:1-3", "Gen 15:1-21", "Gen 17:1-22"],
+      "confidence": "scriptural",
+      "tags": ["covenant", "promise", "messianic"],
+      "displayOrder": 7
+    },
+    {
+      "id": "covenant-mosaic",
+      "kind": "covenant",
+      "label": "Mosaic Covenant",
+      "terms": {
+        "promise": "You shall be my treasured possession (Exod 19:5)",
+        "condition": "Obey my voice and keep my covenant (Exod 19:5)",
+        "sign": "Sabbath (Exod 31:13-17)"
+      },
+      "status": "superseded",
+      "time": {
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "confidence": "approximate"
+      },
+      "source": ["Exod 19-24", "Deut 28"],
+      "confidence": "scriptural",
+      "tags": ["covenant", "law", "pentateuch"],
+      "displayOrder": 8
+    },
+    {
+      "id": "place-sinai",
+      "kind": "place",
+      "label": "Mount Sinai",
+      "modernName": "Jebel Musa (traditional) / other candidates",
+      "coords": [28.539, 33.973],
+      "siteCandidates": [
+        "Jebel Musa, Sinai Peninsula (traditional)",
+        "Jebel Serbal, Sinai Peninsula",
+        "Mount Kharith, north Arabia (alternative)"
+      ],
+      "image": "media/sinai-panorama.jpg",
+      "confidence": "traditional",
+      "tags": ["location", "disputed-site"],
+      "displayOrder": 9
+    },
+    {
+      "id": "political-egypt",
+      "kind": "political",
+      "label": "New Kingdom Egypt",
+      "trajectory": "stable",
+      "group": "world",
+      "time": {
+        "derived": { "start": -1550, "end": -1070, "chronology": "standard" },
+        "confidence": "exact"
+      },
+      "source": ["Egyptian king lists", "Merneptah Stele (1208 BC)"],
+      "confidence": "archaeological",
+      "tags": ["world-history", "empire"],
+      "displayOrder": 10
+    },
+    {
+      "id": "political-israel",
+      "kind": "political",
+      "label": "United Monarchy of Israel",
+      "trajectory": "rising",
+      "group": "israel",
+      "time": {
+        "derived": { "start": -1010, "end": -930, "chronology": "thiele" },
+        "confidence": "approximate"
+      },
+      "source": ["1 Sam 10-2 Sam 5", "1 Kgs 1-11"],
+      "confidence": "scriptural",
+      "tags": ["israel", "monarchy"],
+      "displayOrder": 11
+    },
+    {
+      "id": "person-saul",
+      "kind": "person",
+      "label": "Saul",
+      "roles": ["king"],
+      "group": "israel",
+      "time": {
+        "derived": { "start": -1010, "end": -1000, "chronology": "thiele" },
+        "confidence": "approximate",
+        "anchor": "1 Sam 13:1 (disputed: 1 or 2 years)"
+      },
+      "source": ["1 Sam 9-31", "1 Chr 10"],
+      "confidence": "scriptural",
+      "tags": ["monarchy", "united-kings"],
+      "displayOrder": 12
+    },
+    {
+      "id": "person-david",
+      "kind": "person",
+      "label": "David",
+      "roles": ["king", "prophet", "musician"],
+      "group": "israel",
+      "time": {
+        "derived": { "start": -1040, "end": -970, "chronology": "thiele" },
+        "confidence": "approximate",
+        "derivation": {
+          "steps": [
+            "40-year reign (2 Sam 5:4, 1 Kgs 2:11)",
+            "United monarchy ends 930 BC (1 Kgs 12)",
+            "930 + 40 = 970 BC (death)",
+            "970 + 40 = 1010 BC (accession)"
+          ],
+          "sources": ["2 Sam 5:4", "1 Kgs 2:11", "1 Kgs 12:1-24"]
+        }
+      },
+      "source": ["1 Sam 16-2 Sam 24", "1 Chr 11-29"],
+      "confidence": "scriptural",
+      "tags": ["monarchy", "messianic", "united-kings"],
+      "displayOrder": 13
+    },
+    {
+      "id": "person-solomon",
+      "kind": "person",
+      "label": "Solomon",
+      "roles": ["king", "prophet"],
+      "group": "israel",
+      "time": {
+        "derived": { "start": -970, "end": -931, "chronology": "thiele" },
+        "confidence": "approximate",
+        "anchor": "40-year reign (1 Kgs 11:42)"
+      },
+      "source": ["1 Kgs 1-11", "2 Chr 1-9"],
+      "confidence": "scriptural",
+      "tags": ["monarchy", "united-kings", "temple"],
+      "displayOrder": 14
+    },
+    {
+      "id": "book-exodus",
+      "kind": "book",
+      "label": "Exodus",
+      "author": { "name": "Moses", "disputed": false },
+      "genre": "Narrative / Law",
+      "eventsDescribed": "-1446 to -1445 (Exodus through Sinai)",
+      "time": {
+        "derived": { "start": -1446, "chronology": "thiele" },
+        "confidence": "approximate"
+      },
+      "note": "Date of events described. Date of writing is debated.",
+      "source": ["Exod 17:14", "Exod 24:4", "Deut 31:24"],
+      "confidence": "traditional",
+      "tags": ["pentateuch", "torah"],
+      "displayOrder": 15
+    },
+    {
+      "id": "book-kings",
+      "kind": "book",
+      "label": "1-2 Kings",
+      "author": { "name": "Unknown (possibly Jeremiah)", "disputed": true },
+      "genre": "Historical",
+      "eventsDescribed": "-930 to -586 (Division through Exile)",
+      "time": {
+        "derived": { "start": -560, "chronology": "standard" },
+        "confidence": "approximate"
+      },
+      "note": "Date of writing (not events described).",
+      "source": ["2 Kgs 25:27-30 (internal terminus)"],
+      "confidence": "inferred",
+      "tags": ["historical", "monarchy"],
+      "displayOrder": 16
+    },
+    {
+      "id": "theme-redemption",
+      "kind": "theme",
+      "label": "Redemption",
+      "note": "The thread of deliverance from bondage: Egypt, Exile, Sin.",
+      "tags": ["theme", "messianic", "redemption"],
+      "displayOrder": 17
+    },
+    {
+      "id": "evt-temple-built",
+      "kind": "event",
+      "label": "Temple Completed",
+      "time": {
+        "derived": { "start": -966, "chronology": "thiele" },
+        "confidence": "approximate",
+        "anchor": "4th year of Solomon (1 Kgs 6:37-38)",
+        "derivation": {
+          "steps": [
+            "1 Kgs 6:1: 480 years after Exodus",
+            "Exodus = 1446 BC",
+            "1446 - 480 = 966 BC"
+          ],
+          "sources": ["1 Kgs 6:1", "1 Kgs 6:37-38"]
+        }
+      },
+      "source": ["1 Kgs 6:37-38", "2 Chr 5"],
+      "confidence": "scriptural",
+      "tags": ["temple", "monarchy"],
+      "displayOrder": 18
+    },
+    {
+      "id": "evt-division",
+      "kind": "event",
+      "label": "Division of the Kingdom",
+      "time": {
+        "derived": { "start": -930, "chronology": "thiele" },
+        "confidence": "approximate",
+        "anchor": "1 Kgs 12:1 (after Solomon's death)"
+      },
+      "source": ["1 Kgs 12:1-24", "2 Chr 10"],
+      "confidence": "scriptural",
+      "tags": ["monarchy", "judgment"],
+      "displayOrder": 19
+    },
+    {
+      "id": "evt-cross",
+      "kind": "event",
+      "label": "The Cross",
+      "ref": "nt-timeline:evt-cross",
+      "time": {
+        "derived": { "start": 30, "chronology": "standard" },
+        "confidence": "approximate"
+      },
+      "source": ["John 19:16-18", "1 Cor 15:3-4"],
+      "confidence": "scriptural",
+      "tags": ["messianic", "redemption", "new-testament"],
+      "note": "Cross-timeline reference: full data lives in NT Timeline.",
+      "displayOrder": 20
+    }
+  ],
+  "edges": [
+    { "id": "e-001", "from": "span-egypt", "to": "evt-exodus", "kind": "contains", "confidence": "certain", "note": "The span ends when the Exodus occurs." },
+    { "id": "e-002", "from": "evt-exodus", "to": "evt-red-sea", "kind": "contains", "confidence": "certain", "note": "The crossing is part of the Exodus event complex." },
+    { "id": "e-003", "from": "evt-exodus", "to": "evt-sinai", "kind": "precedes", "confidence": "certain", "note": "~3 months later (Exod 19:1)." },
+    { "id": "e-004", "from": "evt-sinai", "to": "covenant-mosaic", "kind": "covenants", "confidence": "certain", "note": "Moses is the mediator." },
+    { "id": "e-005", "from": "covenant-abrahamic", "to": "covenant-mosaic", "kind": "escalates", "confidence": "traditional", "claim": "Mosaic gives the Abrahamic promise its legal/ethical form; not a replacement but an administration.", "color": "#7c3aed" },
+    { "id": "e-006", "from": "evt-exodus", "to": "evt-cross", "kind": "types", "confidence": "traditional", "subtype": "redemption", "claim": "Deliverance from Egypt prefigures deliverance from sin (1 Cor 10:1-2; Heb 3:7-19).", "color": "#dc2626" },
+    { "id": "e-007", "from": "person-moses", "to": "evt-exodus", "kind": "responds", "confidence": "certain", "note": "Moses is the agent; Pharaoh's refusal is the trigger." },
+    { "id": "e-008", "from": "evt-sinai", "to": "place-sinai", "kind": "located_in", "confidence": "certain" },
+    { "id": "e-009", "from": "person-moses", "to": "covenant-mosaic", "kind": "covenants", "confidence": "certain", "note": "Moses is the mediator." },
+    { "id": "e-010", "from": "person-saul", "to": "person-david", "kind": "succeeds", "confidence": "certain", "note": "David anointed during Saul's life; reigns after Saul's death.", "source": ["1 Sam 16:13", "2 Sam 1-2", "1 Chr 11"] },
+    { "id": "e-011", "from": "person-david", "to": "person-solomon", "kind": "succeeds", "confidence": "certain", "source": ["1 Kgs 2:11-25", "1 Chr 22:9-10"] },
+    { "id": "e-012", "from": "person-solomon", "to": "evt-temple-built", "kind": "causes", "confidence": "certain", "note": "Solomon's building project; 7 years (1 Kgs 6:37)." },
+    { "id": "e-013", "from": "evt-temple-built", "to": "evt-division", "kind": "precedes", "confidence": "certain", "note": "Temple 966 BC; Division 930 BC. 36 years apart." },
+    { "id": "e-014", "from": "political-egypt", "to": "span-egypt", "kind": "governs", "confidence": "certain", "note": "Israel is a vassal/subject population in Egypt.", "source": ["Exod 1:11-14", "Exod 5:1-4"] },
+    { "id": "e-015", "from": "political-israel", "to": "person-saul", "kind": "governs", "confidence": "certain", "note": "Saul is the first king of the United Monarchy." },
+    { "id": "e-016", "from": "political-israel", "to": "person-david", "kind": "governs", "confidence": "certain" },
+    { "id": "e-017", "from": "political-israel", "to": "person-solomon", "kind": "governs", "confidence": "certain" },
+    { "id": "e-018", "from": "person-david", "to": "political-israel", "kind": "part_of", "confidence": "certain", "note": "David is the central figure of the United Monarchy." },
+    { "id": "e-019", "from": "book-exodus", "to": "evt-exodus", "kind": "references", "confidence": "certain", "note": "Exodus narrates the events of the Exodus." },
+    { "id": "e-020", "from": "book-kings", "to": "evt-division", "kind": "references", "confidence": "certain", "note": "1 Kings 12 narrates the division." },
+    { "id": "e-021", "from": "theme-redemption", "to": "evt-exodus", "kind": "echoes", "confidence": "probable", "note": "Exodus is the paradigmatic redemption event in OT." },
+    { "id": "e-022", "from": "theme-redemption", "to": "evt-cross", "kind": "echoes", "confidence": "probable", "note": "The Cross is the NT fulfillment of the redemption theme." },
+    { "id": "e-023", "from": "evt-exodus", "to": "evt-red-sea", "kind": "types", "confidence": "traditional", "subtype": "provision", "claim": "Passing through the sea prefigures passing through baptism (1 Pet 3:21).", "color": "#0891b2" },
+    { "id": "e-024", "from": "covenant-mosaic", "to": "covenant-abrahamic", "kind": "contrasts", "confidence": "speculative", "claim": "Law brings knowledge of sin (Rom 3:20); promise is by faith (Rom 4:16). The contrast highlights grace.", "color": "#f59e0b" },
+    { "id": "e-025", "from": "person-saul", "to": "person-david", "kind": "rival_of", "confidence": "certain", "note": "Saul pursues David for ~15 years (1 Sam 18-31)." },
+    { "id": "e-026", "from": "period-patriarchal", "to": "span-egypt", "kind": "precedes", "confidence": "certain", "note": "Patriarchal period ends when Israel enters Egypt." },
+    { "id": "e-027", "from": "evt-division", "to": "political-israel", "kind": "causes", "confidence": "certain", "note": "The division ends the United Monarchy; two kingdoms form." },
+    { "id": "e-028", "from": "evt-cross", "to": "theme-redemption", "kind": "fulfills", "confidence": "certain", "subtype": "redemption", "claim": "The Cross is the ultimate act of redemption (Rom 3:24-25, 2 Cor 5:17-21).", "color": "#dc2626" },
+    { "id": "e-029", "from": "book-exodus", "to": "covenant-mosaic", "kind": "references", "confidence": "certain", "note": "Exodus 19-24 records the giving of the Mosaic Covenant." },
+    { "id": "e-030", "from": "person-moses", "to": "book-exodus", "kind": "part_of", "confidence": "certain", "note": "Moses is the author (traditional) and central character.", "locked": true }
+  ],
+  "display": {
+    "blackAndWhite": false,
+    "tracks": [
+      { "id": "track-kings", "label": "Kings of Israel", "color": "#2563eb", "filter": "kind == 'person' AND roles in ['king']" },
+      { "id": "track-covenants", "label": "Covenants", "color": "#7c3aed", "filter": "kind == 'covenant'" },
+      { "id": "track-world", "label": "World History", "color": "#6b7280", "filter": "group == 'world'" },
+      { "id": "track-miracles", "label": "Miracles", "color": "#dc2626", "filter": "subtype == 'miracle'" }
+    ]
+  }
+}

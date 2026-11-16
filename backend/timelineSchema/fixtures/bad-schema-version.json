@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "title": "Bad: Schema Version",
+    "schemaVersion": 99,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1000, 0]
+  },
+  "nodes": [],
+  "edges": []
+}

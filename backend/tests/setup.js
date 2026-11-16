@@ -12,6 +12,13 @@ const prisma = new PrismaClient();
 // deleted before the parent rows they reference.
 export async function cleanDb() {
   const tables = [
+    'TimelineNode',
+    'TimelineEdge',
+    'TimelineDisplayTrack',
+    'TimelineShare',
+    'TimelineUserPreference',
+    'TimelineTemplate',
+    'Timeline',
     'StudyCommentLike',
     'StudyComment',
     'StudyLessonReflection',

@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "title": "All Optional Fields",
+    "author": "Test Author",
+    "schemaVersion": 1,
+    "version": 3,
+    "defaultChronology": "early",
+    "yearRange": [-2000, 100]
+  },
+  "nodes": [
+    {
+      "id": "n-full",
+      "kind": "person",
+      "label": "Fully Populated Person",
+      "subtype": "patriarch",
+      "time": {
+        "anchor": "18th year of Josiah",
+        "statedLength": 40,
+        "statedUnit": "years",
+        "derived": { "start": -1526, "end": -1406, "chronology": "thiele" },
+        "confidence": "approximate",
+        "alternatives": [
+          { "year": -1450, "chronology": "late", "note": "Alternative dating" }
+        ],
+        "derivation": {
+          "steps": ["Step one", "Step two"],
+          "sources": ["Gen 12:1", "External source"]
+        }
+      },
+      "displayOrder": 1,
+      "roles": ["king", "prophet"],
+      "group": "israel",
+      "tags": ["test", "patriarch", "messianic"],
+      "terms": {
+        "promise": "A promise",
+        "condition": "A condition",
+        "sign": "A sign"
+      },
+      "status": "active",
+      "author": { "name": "Moses", "disputed": true },
+      "genre": "Narrative",
+      "eventsDescribed": "-1500 to -1400",
+      "trajectory": "rising",
+      "modernName": "Modern Name",
+      "coords": [31.5, 35.0],
+      "siteCandidates": ["Site A", "Site B"],
+      "image": "media/test.jpg",
+      "ref": "other-timeline:some-node",
+      "source": ["Gen 1:1", "Exod 1:1"],
+      "confidence": "scriptural",
+      "locked": true,
+      "note": "A test note"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-full",
+      "from": "n-full",
+      "to": "n-full",
+      "kind": "types",
+      "subtype": "redemption",
+      "confidence": "traditional",
+      "source": ["1 Cor 10:1"],
+      "note": "Edge note",
+      "claim": "A test claim",
+      "color": "#ff0000",
+      "locked": true
+    }
+  ],
+  "display": {
+    "blackAndWhite": true,
+    "tracks": [
+      { "id": "t1", "label": "Test Track", "color": "#00ff00", "filter": "kind == 'person'" }
+    ]
+  }
+}

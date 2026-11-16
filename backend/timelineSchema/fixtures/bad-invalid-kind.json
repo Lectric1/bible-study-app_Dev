@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "title": "Bad: Invalid Kind",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1000, 0]
+  },
+  "nodes": [
+    { "id": "n-bad", "kind": "galaxy", "label": "Invalid Kind Node" }
+  ],
+  "edges": []
+}

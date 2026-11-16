@@ -40,6 +40,7 @@ import { eswordLibraryRouter } from './routes/eswordLibrary.js';
 import { UPLOADS_PATH } from './middleware/upload.js';
 import { calendarRouter } from './routes/calendar.js';
 import { getFrameSrcOrigins } from './services/frameSrcCache.js';
+import { timelinesRouter } from './routes/timelines.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND_DIST = path.join(__dirname, '..', 'public');
@@ -185,6 +186,7 @@ export function createApp() {
   app.use('/uploads', express.static(UPLOADS_PATH));
 
   app.use('/api/calendar', calendarRouter);
+  app.use('/api/timelines', timelinesRouter);
 
   // Serve the built React app for everything else (SPA fallback)
   app.use(express.static(FRONTEND_DIST));

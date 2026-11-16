@@ -440,4 +440,8 @@ export const api = {
   listFeasts: (tradition, year) => request(`/calendar/feasts/${tradition}/${year}`),
   getPresetKeys: (preset, tradition, year) =>
   request(`/calendar/feasts/${tradition}/${year}?preset=${preset}`).then(d => d.keys),
+
+  //timelines
+  listTimelines: () => request('/timelines'),
+  getTimeline: (id) => request(`/timelines/${id}`),
 };

@@ -154,6 +154,10 @@ model User {
   calendarLayerVisibilities    UserLayerVisibility[]
   dayImages DayImage[]
   layerConfigs UserLayerConfig[]
+  timelines         Timeline[]
+  timelineShares    TimelineShare[]
+  timelineTemplates TimelineTemplate[]
+  timelinePrefs     TimelineUserPreference[]
 }
 
 // Mutual-acceptance connections ("Fellows" in the UI). One row per
@@ -643,3 +647,133 @@ model UserLayerConfig {
   @@index([layerId])
 }
 
+// ─── Timeline Module ────────────────────────────────────────────────────────
+
+model Timeline {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  author            String?
+  schemaVersion     Int      @default(1)
+  version           Int      @default(1)
+  defaultChronology String   @default("thiele")
+  yearStart         Int
+  yearEnd           Int
+  blackAndWhite     Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  nodes  TimelineNode[]
+  edges  TimelineEdge[]
+  tracks TimelineDisplayTrack[]
+  shares TimelineShare[]
+
+  @@index([userId])
+}
+
+model TimelineNode {
+  id              String
+  timelineId      String
+  timeline        Timeline   @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  kind            String
+  label           String
+  subtype         String?
+  time            Json?
+  displayOrder    Int?
+  roles           Json?
+  group           String?
+  tags            Json?
+  terms           Json?
+  status          String?
+  author          Json?
+  genre           String?
+  eventsDescribed String?
+  trajectory      String?
+  modernName      String?
+  coords          Json?
+  siteCandidates  Json?
+  image           String?
+  ref             String?
+  source          Json?
+  confidence      String?
+  locked          Boolean    @default(false)
+  note            String?
+
+  @@id([timelineId, id])
+  @@index([timelineId, kind])
+  @@index([timelineId, group])
+  @@index([timelineId, confidence])
+}
+
+model TimelineEdge {
+  id         String
+  timelineId String
+  timeline   Timeline   @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  fromId     String
+  toId       String
+  kind       String
+  subtype    String?
+  confidence String
+  source     Json?
+  note       String?
+  claim      String?
+  color      String?
+  locked     Boolean    @default(false)
+
+  @@id([timelineId, id])
+  @@index([timelineId, fromId])
+  @@index([timelineId, toId])
+  @@index([timelineId, kind])
+}
+
+model TimelineDisplayTrack {
+  id         String
+  timelineId String
+  timeline   Timeline   @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  label      String
+  color      String
+  filter     String
+
+  @@id([timelineId, id])
+}
+
+// Mirrors CalendarLayerShare — owner can share with other users.
+model TimelineShare {
+  id         String   @id @default(cuid())
+  timelineId String
+  timeline   Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   @default("viewer") // "viewer" | "editor"
+  createdAt  DateTime @default(now())
+
+  @@unique([timelineId, userId])
+  @@index([userId])
+}
+
+model TimelineTemplate {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  schemaVersion Int      @default(1)
+  nodes         Json
+  edges         Json
+  display       Json?
+  tags          String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model TimelineUserPreference {
+  userId    String
+  key       String
+  valueJson Json
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, key])
+}

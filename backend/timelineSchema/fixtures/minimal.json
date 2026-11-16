@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "title": "Minimal",
+    "schemaVersion": 1,
+    "version": 1,
+    "defaultChronology": "thiele",
+    "yearRange": [-1500, -1000]
+  },
+  "nodes": [
+    {
+      "id": "evt-test",
+      "kind": "event",
+      "label": "Test Event",
+      "time": {
+        "derived": { "start": -1200, "chronology": "thiele" },
+        "confidence": "approximate"
+      }
+    }
+  ],
+  "edges": []
+}
