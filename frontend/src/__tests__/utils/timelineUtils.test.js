@@ -2,8 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
     buildContainmentTree, computeLODLevel, cullNodes,
     getEdgeColor, getNodeShape, assignTracks, computeGaps,
-    timeTicks, formatYear,
+    timeTicks, formatYear, generateNodeId, defaultLabel,
+    createNode, generateEdgeId, createEdge, createTrack,
+    generateTrackId,
 } from '../../utils/timelineUtils.js';
+
 
 describe('buildContainmentTree', () => {
   it('builds parent-child from contains edges', () => {
@@ -173,3 +176,80 @@ describe('formatYear', () => {
     expect(formatYear(30)).toBe('30 AD');
   });
 });
+
+describe('generateNodeId', () => {
+  it('returns kind-1 when no conflicts', () => {
+    expect(generateNodeId('event', [])).toBe('evt-1');
+  });
+  it('increments past existing IDs', () => {
+    const nodes = [{ id: 'evt-1' }, { id: 'evt-2' }];
+    expect(generateNodeId('event', nodes)).toBe('evt-3');
+  });
+  it('uses kind-specific prefix', () => {
+    expect(generateNodeId('person', [])).toBe('person-1');
+    expect(generateNodeId('covenant', [])).toBe('cov-1');
+  });
+});
+
+describe('defaultLabel', () => {
+  it('returns correct label for each kind', () => {
+    expect(defaultLabel('event')).toBe('New Event');
+    expect(defaultLabel('person')).toBe('New Person');
+    expect(defaultLabel('period')).toBe('New Period');
+  });
+});
+
+describe('createNode', () => {
+  it('creates a valid node object', () => {
+    const node = createNode('event', -1446, []);
+    expect(node.id).toBe('evt-1');
+    expect(node.kind).toBe('event');
+    expect(node.label).toBe('New Event');
+    expect(node.time.derived.start).toBe(-1446);
+    expect(node.time.derived.end).toBe(-1446);
+    expect(node.time.confidence).toBe('undated');
+  });
+  it('avoids ID collision', () => {
+    const existing = [{ id: 'evt-1' }];
+    const node = createNode('event', -100, existing);
+    expect(node.id).toBe('evt-2');
+  });
+});
+describe('generateEdgeId', () => {
+  it('returns edge-1 when no edges exist', () => {
+    expect(generateEdgeId([])).toBe('edge-1');
+  });
+  it('skips taken ids', () => {
+    const edges = [{ id: 'edge-1' }, { id: 'edge-2' }];
+    expect(generateEdgeId(edges)).toBe('edge-3');
+  });
+});
+
+describe('createEdge', () => {
+  it('creates a minimal edge', () => {
+    const e = createEdge('a', 'b', 'precedes', 'probable', []);
+    expect(e).toEqual({ id: 'edge-1', from: 'a', to: 'b', kind: 'precedes', confidence: 'probable' });
+  });
+  it('includes optional extras', () => {
+    const e = createEdge('a', 'b', 'types', 'traditional', [], { color: '#ff0000', subtype: 'miracle' });
+    expect(e.color).toBe('#ff0000');
+    expect(e.subtype).toBe('miracle');
+  });
+});
+
+describe('generateTrackId', () => {
+  it('returns track-1 when no tracks exist', () => {
+    expect(generateTrackId([])).toBe('track-1');
+  });
+  it('skips taken ids', () => {
+    expect(generateTrackId([{ id: 'track-1' }])).toBe('track-2');
+  });
+});
+
+describe('createTrack', () => {
+  it('creates a track with defaults', () => {
+    const t = createTrack('Kings', '#2563eb', '', []);
+    expect(t).toEqual({ id: 'track-1', label: 'Kings', color: '#2563eb', filter: '', visible: true });
+  });
+});
+

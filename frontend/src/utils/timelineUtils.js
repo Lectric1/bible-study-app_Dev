@@ -186,3 +186,79 @@ export function getKindFill(kind) {
   };
   return fills[kind] || '#6b7280';
 }
+// ─── Node Creation ─────────────────────────────────────────────────────────
+
+const KIND_PREFIXES = {
+  event: 'evt', span: 'span', person: 'person', place: 'place',
+  covenant: 'cov', book: 'book', political: 'pol', theme: 'theme', period: 'period',
+};
+
+export function generateNodeId(kind, existingNodes) {
+  const prefix = KIND_PREFIXES[kind] || 'node';
+  const taken = new Set(existingNodes.map((n) => n.id));
+  let n = 1;
+  while (taken.has(`${prefix}-${n}`)) n++;
+  return `${prefix}-${n}`;
+}
+
+export function defaultLabel(kind) {
+  const labels = {
+    event: 'New Event', span: 'New Span', person: 'New Person',
+    place: 'New Place', covenant: 'New Covenant', book: 'New Book',
+    political: 'New Political Entity', theme: 'New Theme', period: 'New Period',
+  };
+  return labels[kind] || 'New Node';
+}
+
+export function createNode(kind, year, existingNodes) {
+  return {
+    id: generateNodeId(kind, existingNodes),
+    kind,
+    label: defaultLabel(kind),
+    time: {
+      derived: { start: year, end: year },
+      confidence: 'undated',
+    },
+  };
+}
+// ─── Edge Creation ─────────────────────────────────────────────────────────
+
+export function generateEdgeId(existingEdges) {
+  const taken = new Set(existingEdges.map((e) => e.id));
+  let n = 1;
+  while (taken.has(`edge-${n}`)) n++;
+  return `edge-${n}`;
+}
+
+export function createEdge(fromId, toId, kind, confidence, existingEdges, extras = {}) {
+  const edge = {
+    id: generateEdgeId(existingEdges),
+    from: fromId,
+    to: toId,
+    kind,
+    confidence,
+  };
+  if (extras.color) edge.color = extras.color;
+  if (extras.subtype) edge.subtype = extras.subtype;
+  if (extras.claim) edge.claim = extras.claim;
+  return edge;
+}
+
+// ─── Track Helpers ─────────────────────────────────────────────────────────
+
+export function generateTrackId(existingTracks) {
+  const taken = new Set(existingTracks.map((t) => t.id));
+  let n = 1;
+  while (taken.has(`track-${n}`)) n++;
+  return `track-${n}`;
+}
+
+export function createTrack(label, color, filter, existingTracks) {
+  return {
+    id: generateTrackId(existingTracks),
+    label,
+    color,
+    filter: filter || '',
+    visible: true,
+  };
+}

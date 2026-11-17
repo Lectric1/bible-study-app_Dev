@@ -1,7 +1,20 @@
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import TimelineCanvas from '../components/TimelineCanvas.jsx';
 
+// ─── Shared fixture ─────────────────────────────────────────────────────
+
+const makeDoc = () => ({
+    meta: { title: 'Test', yearRange: [-1500, -1000] },
+    nodes: [
+        { id: 'n1', kind: 'event', label: 'Exodus', time: { derived: { start: -1446 } } },
+        { id: 'n2', kind: 'span', label: 'Wilderness', time: { derived: { start: -1446, end: -1406 } } },
+    ],
+    edges: [
+        { id: 'e1', from: 'n1', to: 'n2', kind: 'contains', confidence: 'certain' },
+    ],
+    display: { tracks: [] },
+});
 // Try importing from backend fixtures; fall back to inline
 
 const fixture = {
@@ -51,3 +64,58 @@ describe('TimelineCanvas', () => {
     });
 });
 
+// ─── Phase 3: Selection wiring ───────────────────────────────────────────
+
+describe('TimelineCanvas selection', () => {
+    const makeDoc = () => ({
+        meta: { title: 'Test', yearRange: [-1500, -1000] },
+        nodes: [
+            { id: 'n1', kind: 'event', label: 'Exodus', time: { derived: { start: -1446 } } },
+            { id: 'n2', kind: 'span', label: 'Wilderness', time: { derived: { start: -1446, end: -1406 } } },
+        ],
+        edges: [
+            { id: 'e1', from: 'n1', to: 'n2', kind: 'contains', confidence: 'certain' },
+        ],
+        display: { tracks: [] },
+    });
+
+    it('calls onSelectNode when a line-kind hit area is clicked', () => {
+        const onSelectNode = vi.fn();
+        const { container } = render(
+            <TimelineCanvas doc={makeDoc()} onSelectNode={onSelectNode} onSelectEdge={vi.fn()} />
+        );
+        const hitArea = container.querySelector('rect.node-hitarea');
+        expect(hitArea).not.toBeNull();
+        fireEvent.click(hitArea);
+        expect(onSelectNode).toHaveBeenCalled();
+    });
+
+    it('calls onSelectEdge when an edge hit area is clicked', () => {
+        const onSelectEdge = vi.fn();
+        const { container } = render(
+            <TimelineCanvas doc={makeDoc()} onSelectNode={vi.fn()} onSelectEdge={onSelectEdge} />
+        );
+        const edgeHit = container.querySelector('.edge-hitarea');
+        if (edgeHit) {
+            fireEvent.click(edgeHit);
+            expect(onSelectEdge).toHaveBeenCalledWith('e1');
+        }
+    });
+});
+describe('drop-to-create', () => {
+    it('calls onCreateNode with kind and year on drop', () => {
+        const onCreateNode = vi.fn();
+        const { container } = render(
+            <TimelineCanvas doc={makeDoc()} onCreateNode={onCreateNode} />
+        );
+        const svg = container.querySelector('svg');
+        const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+        Object.defineProperty(dropEvent, 'clientX', { value: 400 });
+        Object.defineProperty(dropEvent, 'clientY', { value: 200 });
+        Object.defineProperty(dropEvent, 'dataTransfer', {
+            value: { getData: (t) => t === 'application/x-node-kind' ? 'event' : '', effectAllowed: '' },
+        });
+        svg.dispatchEvent(dropEvent);
+        expect(onCreateNode).toHaveBeenCalledWith('event', expect.any(Number));
+    });
+});
